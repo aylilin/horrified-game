@@ -1,6 +1,4 @@
-#ifndef HERO_H
-#define HERO_H
-
+#pragma once   //for not including headers several times
 #include <vector>
 #include <string>
 
@@ -26,5 +24,3 @@ public:
     std::string get_name() const;
     int get_remainingActions() const;
 };
-
-#endif
