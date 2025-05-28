@@ -18,10 +18,17 @@ Hero::Hero(const std::string& name , int actions , std::string& startLocation)
 
 void Hero::move(const std::string& newLocation)
 {
-    if (remainingActions > 0)
+    if (remainingActions <= 0)
     {
-        currentLocation = newLocation;
-        remainingActions--;
-        std::cout << name  << "moved to " << newLocation << std::endl;
+        throw std::runtime_error("there is not enough action...");
     }
+
+    if (newLocation.empty())
+    {
+        throw std::invalid_argument("location is not valid...");
+    }
+    
+    currentLocation = newLocation;
+    remainingActions--;
+    std::cout << name  << "moved to " << newLocation << std::endl;
 }
