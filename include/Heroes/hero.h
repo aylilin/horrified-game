@@ -9,6 +9,7 @@ class Hero
 protected:
     std::string name;
     int actions;
+    int remainingActions;
     std::vector<std::string> items;      //items that hero carries
     std::string currentLocation;         //where hero is?
 
