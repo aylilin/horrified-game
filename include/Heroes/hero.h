@@ -23,7 +23,7 @@ public:
     //special action is just for archeologist
     
     std::string get_name() const;
-    int get_actions() const;
+    int get_remainingActions() const;
 };
 
 #endif
