@@ -22,5 +22,12 @@ void Archaeologist::specialAction()
         throw std::runtime_error("there is not enough action...");
     }
 
-    std::vector<std::string> neighborItems;
+    std::vector<std::string> neighborItems = 
+    { "tablet" , "violin" , "scroll of thoth" };
+    for (const auto& item : neighborItems)
+    {
+        items.push_back(item);
+        std::cout << "item : " << item << "picked up from neighbor location." << 
+    }
+    remainingActions--;
 }
