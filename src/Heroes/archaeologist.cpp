@@ -1,5 +1,6 @@
 #include "archaeologist.h"
 #include <stdexcept>
+#include <iostream>
 
 Archaeologist::Archaeologist(const std::string& name , const std::string& startLocation)
 : Hero(name , 4 , startLocation)
@@ -24,10 +25,12 @@ void Archaeologist::specialAction()
 
     std::vector<std::string> neighborItems = 
     { "tablet" , "violin" , "scroll of thoth" };
+
     for (const auto& item : neighborItems)
     {
         items.push_back(item);
-        std::cout << "item : " << item << "picked up from neighbor location." << 
+        std::cout << "item : " << item << "picked up from neighbor location." << std::endl;
     }
+
     remainingActions--;
 }
