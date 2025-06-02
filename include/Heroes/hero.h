@@ -12,7 +12,7 @@ protected:
     std::string currentLocation;         //where hero is?
 
 public:  
-    Hero(const std::string& name , int actions , std::string& startLocation);
+    Hero(const std::string& name , int actions , const std::string& startLocation);
     virtual void specialAbility() = 0;
     void move(const std::string& newLocation);
     void pickup(const std::string& item);
