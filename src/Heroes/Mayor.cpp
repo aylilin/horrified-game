@@ -10,9 +10,9 @@ Mayor::Mayor(const std::string& name , const std::string& startLocation)
     }
 }
 
-void Mayor::specialAction()
+void Mayor::specialAbility()
 {
-    std::cout << name << "has no specialAction!" << std::endl;
+    std::cout << name << " has no specialAction!" << std::endl;
 }
 
 void Mayor::manageTownResources()
