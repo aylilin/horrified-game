@@ -6,6 +6,6 @@ class Mayor : public Hero
 public:
     Mayor(const std::string& name , const std::string& startLocation);
 
-    void specialAction();
+    void specialAbility() override;
     void manageTownResources();
-}
+};
