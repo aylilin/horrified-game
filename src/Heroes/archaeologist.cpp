@@ -1,4 +1,4 @@
-#include "archaeologist.h"
+#include "Heroes/archaeologist.h"
 #include <stdexcept>
 #include <iostream>
 
@@ -16,7 +16,7 @@ Archaeologist::Archaeologist(const std::string& name , const std::string& startL
     }
 }
 
-void Archaeologist::specialAction()
+void Archaeologist::specialAbility()
 {
     if (remainingActions <= 0)
     {
