@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 
-Hero::Hero(const std::string& name , int actions , std::string& startLocation) 
+Hero::Hero(const std::string& name , int actions , const std::string& startLocation) 
 : name(name) , actions(actions) , remainingActions(actions) , currentLocation(startLocation) 
 {
     if (actions <= 0)
@@ -30,5 +30,5 @@ void Hero::move(const std::string& newLocation)
     
     currentLocation = newLocation;
     remainingActions--;
-    std::cout << name  << "moved to " << newLocation << std::endl;
+    std::cout << name  << " moved to " << newLocation << std::endl;
 }
