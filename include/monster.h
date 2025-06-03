@@ -20,5 +20,5 @@ public:
     virtual void move(const std::string& newLocation);
     virtual void attack();
     virtual void useSpecialPower() = 0;
-    
+    virtual bool checkDefeatConditions() const = 0;
 };
