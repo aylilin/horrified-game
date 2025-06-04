@@ -12,11 +12,11 @@ private:
 public:
     Dracula();
 
-    int getCoffinsDestroyed() const;
+    virtual int getCoffinsDestroyed() const;
     bool isCoffinDestroyed(const std::string& Location) const;
 
-    void destroyCoffin(const std::string& Location);
-    void useSpecialPower() override;
+    virtual void destroyCoffin(const std::string& Location);
+    virtual void useSpecialPower() override;
     bool checkDefeatConditions() const override;
 
 };
