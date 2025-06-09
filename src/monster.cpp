@@ -2,17 +2,18 @@
 #include <iostream>
 
 Monster::Monster(const std::string& name)
-: name(name) , isDead(false) , health(100) {}
+: name(name) , currentLocation("") , health(3) , isDead(false) {}
 
 void Monster::move(const std::string& newLocation)
 {
     currentLocation = newLocation;
-    std::cout << name << " moved to " << newLocation << std::endl;
+    std::cout << name << "moved to " << newLocation << "\n";
 }
 
-void Monster::attack()
+void Monster::attack(Hero& target)
 {
-    std::cout << name << " attacks..." << std::endl;
+    std::cout << name << " attacked to " << target.get_name() << "\n";
+    target.receiveDamage(1);  // attack power = 1 
 }
 
 std::string Monster::get_name() const
@@ -30,3 +31,7 @@ bool Monster::get_isDead() const
     return isDead;
 }
 
+void Monster::set_location(const std::string& newLoc)
+{
+    currentLocation = newLoc;
+}
