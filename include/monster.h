@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "hero.h"
 
 class Monster
 {
@@ -17,8 +18,9 @@ public:
     std::string get_currentLocation() const;
     bool get_isDead() const;
 
+    virtual void set_location(const std::string& newLoc);
     virtual void move(const std::string& newLocation);
-    virtual void attack();
+    virtual void attack(Hero& target);
     virtual void useSpecialPower() = 0;
     virtual bool checkDefeatConditions() const = 0;
 };
