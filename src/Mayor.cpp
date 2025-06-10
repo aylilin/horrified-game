@@ -1,14 +1,9 @@
-#include "Heroes/Mayor.h"
+#include "../include/Mayor.h"
 #include <iostream>
 
 Mayor::Mayor(const std::string& name , const std::string& startLocation)
 : Hero(name , 5 , startLocation)
-{
-    if (name.empty())
-    {
-        throw std::invalid_argument("Mayor's name could not be empty!");
-    }
-}
+{}
 
 void Mayor::specialAbility()
 {
