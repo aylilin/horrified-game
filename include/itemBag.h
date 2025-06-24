@@ -1,7 +1,11 @@
 #pragma once
 #include <vector>
 #include <string>
+
 #include "item.h"
+#include "hero.h"
+
+class Hero;
 
 class ItemBag
 {
@@ -12,8 +16,12 @@ public:
     ItemBag();
     
     void generateRandomItems(int count);
-    Item drawRandomItem();
     bool isEmpty() const;
     void returnItem(const Item& item);
     void printSummary() const;
+    bool transferItemToHero(const std::string& location, Hero& hero);
+    void addItem(const Item& item);
+    void loadFromDefinitions();
+    std::vector<Item> drawRandomItems(int count);
+    
 };     
