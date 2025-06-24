@@ -1,7 +1,17 @@
 #pragma once   //for not including headers several times
 #include "item.h"
+#include "itemBag.h"
+//#include "map.h"
+#include "perkCard.h"
+
 #include <vector>
 #include <string>
+#include <memory>
+
+class Map;
+class ItemBag;
+class PerkCard;
+class Monster;
 
 class Hero
 {
@@ -10,7 +20,8 @@ protected:
     int actions;
     int remainingActions;
     std::vector<std::string> items;      //items that hero carries
-    std::string currentLocation;         //where hero is?
+    std::unique_ptr<PerkCard> perk;      //perk cart haee ke dare
+    std::string currentLocation;         //where is hero?
     int extraActions = 0;
     std::vector<Item> inventory; 
     int health = 4;
@@ -22,15 +33,22 @@ public:
     virtual void resetActions();
     void addItem(const Item& item);
     void move(const std::string& newLocation);
-    void pickup(const std::string& item);
-    void guide();
-    void advance();
+    void pickup(ItemBag& bag);
+    void dropAllItems(ItemBag& bag);
+    void guide(Map& map);
+    //void advance();
     //special action is just for archeologist
     
     void set_location(const std::string& newLocation);
     std::string get_location() const;
     std::string get_name() const;
     int get_remainingActions() const;
+    const std::vector<Item>& get_inventory() const;
+    
+    void givePerk(std::unique_ptr<PerkCard> newPerk);
+    bool hasPerk() const;
+    void usePerk(Map& map, std::vector<Hero*>& heroes, std::vector<Monster*>& monsters, ItemBag& bag, bool& skipMonsterPhase);
+
 
     void receiveDamage(int amount);
     int get_health() const;
