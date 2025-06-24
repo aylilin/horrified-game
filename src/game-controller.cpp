@@ -308,6 +308,30 @@ void GameController::heroPhase(Hero* currentHero)
     currentHero->resetActions();
 }
 
+void GameController::monsterPhase()
+{
+    if (skipMonsterPhase)
+    {
+        std::cout << "Monster Phase was skipped due to perk card.\n";
+        skipMonsterPhase = false;
+        return;
+    }
+
+    if (monsterDeck.empty())
+    {
+        std::cout << "No monster cards left!\n";
+        return;
+    }
+
+    auto& card = monsterDeck.back();
+    std::cout << "\n--- Monster Phase ---\n";
+    std::cout << "Card: " << card->get_name() << "\n";
+
+    card->apply(map, monsters, heroes, dice);
+
+    monsterDeck.pop_back();
+}
+
 void GameController::checkDefeat(Hero* hero)
 {
     if (!hero->isAlive())
@@ -424,7 +448,13 @@ void GameController::run()
     skipMonsterPhase = false;
     
     for (Hero* h : heroes) {
-        heroPhase(h);
+        if (h->isAlive())
+        {
+            heroPhase(h);
+            monsterPhase();
+            displayGameState();
+            if (terrorLevel >= 5) return;
+        }
     }
 }
 }
