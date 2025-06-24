@@ -1,4 +1,6 @@
 #include "../include/archaeologist.h"
+#include "../include/perkCard.h"
+
 #include <stdexcept>
 #include <iostream>
 
