@@ -14,7 +14,7 @@ std::string BreakOfDawnCard::get_description() const
     return "The monster phase is passed. 2 items are placed on the map.";
 }
 
-void BreakOfDawnCard::apply(Hero& , std::vector<Hero*>& , std::vector<Monster*>& , ItemBag& bag , Map& map , bool& skipMonsterPhase) 
+void BreakOfDawnCard::apply(Hero& , std::vector<Hero*>& allheroes, std::vector<Monster*>& , ItemBag& bag , Map& map , bool& skipMonsterPhase) 
 {
     skipMonsterPhase = true;
     std::cout << "The monster phase was passed this turn.\n";
@@ -22,18 +22,23 @@ void BreakOfDawnCard::apply(Hero& , std::vector<Hero*>& , std::vector<Monster*>&
     int placed = 0;
     while (placed < 2 && !bag.isEmpty()) 
     {
-        std::vector<Item> items = bag.drawRandomItems(3); 
-
-        for (const auto& item : items)
+        for (Hero* hero : allheroes)
         {
-        bag.addItem(item);
-        }
-        
-        placed++;
+            if (!bag.isEmpty())
+            {
+                auto items = bag.drawRandomItems(1);
+                if (!items.empty())
+                {
+                    Item item = items[0];
+                }
+            }else {
+        std::cout << "Item bag is empty!\n";
     }
+}
 
     if (placed < 2) 
     {
         std::cout << "The item bag had less than 2 items...\n";
     }
+}
 }
