@@ -70,6 +70,8 @@ private:
     void setupVillagers();
     void setUpGame();
     void heroPhase(Hero* currentHero);
+    void GameController::monsterPhase();
+
 
     void setupPerkCards();
 
