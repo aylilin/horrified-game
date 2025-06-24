@@ -2,6 +2,8 @@
 #include <string>
 #include "hero.h"
 
+class Hero;
+
 class Monster
 {
 protected:
