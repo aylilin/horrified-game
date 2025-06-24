@@ -1,10 +1,18 @@
 #pragma once
 #include <string>
 
+enum class DiceFace
+{
+    Strike,
+    Power,  
+    Blank  
+};
+
 class Dice 
 {
 public:
     Dice();
-    int rollNumber();   
-    std::string rollMonsterFace();
+    
+    DiceFace rollOne();
+    std::vector<DiceFace> rollMultiple(int);
 };
