@@ -1,22 +1,27 @@
 #include "../include/dice.h"
+
 #include <cstdlib>
 #include <ctime>
 #include <vector>
 
-Dice::Dice() 
+Dice::Dice()
 {
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 }
 
-int Dice::rollNumber() 
+DiceFace Dice::rollOne()
 {
-    return 1 + std::rand() % 6;
+    int r = std::rand() % 6;
+
+    if (r < 2) return DiceFace::Blank;       // 2/6 
+    else if (r < 4) return DiceFace::Strike; // 2/6
+    else return DiceFace::Power;             // 2/6
 }
 
-std::string Dice::rollMonsterFace() 
+std::vector<DiceFace> Dice::rollMultiple(int count)
 {
-    static std::vector<std::string> faces =
-    {"Attack", "Move", "Frenzy", "Blank", "Attack", "Move"};
-    int index = std::rand() % faces.size();
-    return faces[index];
+    std::vector<DiceFace> results;
+    for (int i = 0 ; i < count ; ++i)
+        results.push_back(rollOne());
+    return results;
 }
