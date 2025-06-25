@@ -13,7 +13,7 @@ std::string RepelCard::get_description() const
     return "move one monster back two spaces.";
 }
 
-void RepelCard::apply(Hero& , std::vector<Hero*>& , std::vector<Monster>& monsters , ItemBag& , Map& map , bool&) 
+void RepelCard::apply(Hero& , std::vector<Hero*>& , std::vector<Monster*>& monsters , ItemBag& , Map& map , bool&) 
 {
     if (monsters.empty()) 
     {
@@ -24,8 +24,8 @@ void RepelCard::apply(Hero& , std::vector<Hero*>& , std::vector<Monster>& monste
     std::cout << '\t' << "***Monster Selection***\n";
     for (size_t i = 0; i < monsters.size(); ++i) 
     {
-        std::cout << i + 1 << ". " << monsters[i].get_name()
-        << " in " << monsters[i].get_currentLocation() << "\n";
+        std::cout << i + 1 << ". " << monsters[i]->get_name()
+        << " in " << monsters[i]->get_currentLocation() << "\n";
     }
 
     int choice;
@@ -39,7 +39,7 @@ void RepelCard::apply(Hero& , std::vector<Hero*>& , std::vector<Monster>& monste
         return;
     }
 
-    Monster& selected = monsters[choice - 1];
+    Monster& selected = *monsters[choice - 1];
     std::string currentLocation = selected.get_currentLocation();
 
     std::cout << "The place you want to be moved to : " << selected.get_name() << "\n";
