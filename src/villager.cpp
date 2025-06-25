@@ -1,8 +1,7 @@
 #include "../include/villager.h"
 
-Villager::Villager(const std::string& name , const std::string& startLocation , const std::string& safeLocation)
-    : name(name) , currentLocation(startLocation) ,
-    safeLocation(safeLocation) , alive(true) {}
+Villager::Villager(const std::string& name , const std::string& safeLocation)
+    : name(name) , safeLocation(safeLocation) , currentLocation("") , guided(false){}
 
 std::string Villager::get_name() const
 {
@@ -22,6 +21,16 @@ std::string Villager::get_safeLocation() const
 void Villager::set_location(const std::string& newLoc)
 {
     currentLocation = newLoc;
+}
+
+bool Villager::isGuided() const
+{
+    return guided;
+}
+
+void Villager::set_guided(bool val)
+{
+    guided = val;
 }
 
 bool Villager::isAlive() const
