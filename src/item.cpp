@@ -1,6 +1,7 @@
 #include "item.h"
 #include <map>
 #include <stdexcept>
+#include <sstream>
 // const std::map<std::string , std::tuple<Item::Type , int , std::string>> ITEM_DEFENITIONS =
 // {"Flower" , {Item::Type::YELLOW , 2 , "Docks"}} ,
 // {"Flower" , {Item::Type::YELLOW , 2 , "Docks"}} ,
@@ -38,4 +39,20 @@ int Item::get_power() const
 const std::string& Item::get_location() const
 {
     return Location;
+}
+
+std::string Item::toString() const {
+    std::ostringstream oss;
+    std::string typeStr;
+    switch (type) {
+        case Type::RED: typeStr = "Red"; break;
+        case Type::BLUE: typeStr = "Blue"; break;
+        case Type::YELLOW: typeStr = "Yellow"; break;
+    }
+
+    oss << "[" << name << "] "
+        << "Type: " << typeStr << ", "
+        << "Power: " << power << ", "
+        << "Location: " << Location;
+    return oss.str();
 }
