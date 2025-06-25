@@ -1,7 +1,12 @@
 #include "itemBag.h"
+#include "hero.h"
+#include "monster.h"
+
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <algorithm>
+#include <random>
 
 ItemBag::ItemBag()
 {
@@ -18,19 +23,24 @@ void ItemBag::generateRandomItems(int count)
         Item::Type type = static_cast<Item::Type>(std::rand() % 3);
         int power = 1 + std::rand() % 6;
         std::string loc = Locations[std::rand() % Locations.size()];
-        items.emplace_back(name, type, power, loc);
+        items.emplace_back("item name" , type , power , loc);
     }
 }
 
-Item ItemBag::drawRandomItem()
+std::vector<Item> ItemBag::drawRandomItems(int count)
 {
-    if (items.empty()) {
-        throw std::out_of_range("Item bag is empty!");
+    std::vector<Item> selected;
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(items.begin(), items.end(), g);
+
+    for (int i = 0; i < count && !items.empty(); ++i)
+    {
+        selected.push_back(items.back());
+        items.pop_back();
     }
 
-    int index = std::rand() % items.size();
-    Item selected = items[index];
-    items.erase(items.begin() + index);
     return selected;
 }
 
@@ -39,12 +49,51 @@ bool ItemBag::isEmpty() const
     return items.empty();
 }
 
+bool ItemBag::transferItemToHero(const std::string& location, Hero& hero)
+{
+    for (auto it = items.begin() ; it != items.end() ; it++)
+    {
+        if (it->get_location() == location)
+        {
+            Item item = *it;
+            items.erase(it);  //temporary
+            hero.addItem(item);
+            return true;
+        }
+    }
+    return false;
+}
+
+void ItemBag::addItem(const Item& item)
+{
+    items.push_back(item);
+}
+
 void ItemBag::returnItem(const Item& item) 
 {
     items.push_back(item);
 }
 
-void ItemBag::printSummary() const {
+void ItemBag::loadFromDefinitions()
+{
+    items.clear();
+
+    std::vector<std::string> locations = 
+    {
+        "Docks", "Laboratory", "Institute", "Theatre", "Museum", "Graveyard",
+        "Cave", "Tower", "Barn", "Crypt", "Dungeon", "Precinct"
+    };
+
+    for (int i = 0; i < 20; ++i)
+    {
+        items.emplace_back("Item", Item::Type::RED, rand() % 3 + 1, locations[rand() % locations.size()]);
+        items.emplace_back("Item", Item::Type::BLUE, rand() % 3 + 1, locations[rand() % locations.size()]);
+        items.emplace_back("Item", Item::Type::YELLOW, rand() % 3 + 1, locations[rand() % locations.size()]);
+    }
+}
+
+void ItemBag::printSummary() const 
+{
     int red = 0, blue = 0, yellow = 0;
 
     for (const auto& item : items) {
