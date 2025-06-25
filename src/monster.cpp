@@ -1,4 +1,7 @@
-#include "monster.h"
+#include "../include/hero.h"
+#include "../include/itemBag.h"
+#include "../include/monster.h"
+
 #include <iostream>
 
 Monster::Monster(const std::string& name)
