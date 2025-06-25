@@ -1,4 +1,6 @@
 #include "../include/Mayor.h"
+#include "../include/perkCard.h"
+
 #include <iostream>
 
 Mayor::Mayor(const std::string& name , const std::string& startLocation)
