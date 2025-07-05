@@ -5,8 +5,8 @@
 
 class Hero;
 class Monster;
-class ItemBag;
 class Map;
+class ItemBag;
 
 class PerkCard
 {
