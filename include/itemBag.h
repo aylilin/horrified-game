@@ -3,9 +3,9 @@
 #include <string>
 
 #include "item.h"
-#include "hero.h"
 
 class Hero;
+class map;
 
 class ItemBag
 {
