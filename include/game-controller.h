@@ -1,13 +1,22 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+#include <chrono>
+#include <ctime>
+
 #include "map.h"
-#include "dice.h"
+#include "itemBag.h"
+#include "perkCard.h"
+#include "monster.h"
+#include "hero.h"
 #include "Dracula.h"
 #include "invisible-man.h"
 #include "archaeologist.h"
 #include "Mayor.h"
 #include "villager.h"
-#include "perkCard.h"
+#include "dice.h"
+#include "item.h"
 
 #include "FormOfTheBatCard.h"
 #include "SunriseCard.h"
@@ -20,11 +29,11 @@
 #include "RepelCard.h"
 #include "HurryCard.h"
 #include "FortuneTellerCard.h"
-
-#include <vector>
-#include <memory>
-#include <chrono>
-#include <ctime>
+#include "FormerEmployerCard.h"
+#include "HurriedAssistantCard.h"
+#include "TheInnocent.h"
+#include "EgyptianExpert.h"
+#include "TheIchthyologist.h"
 
 struct PlayerInfo
 {
@@ -56,8 +65,7 @@ private:
 
     void setup();
     void assignHeroesToPlayers();
-    //void shuffleMonsterDeck();
-    //void runTurn();
+
     void showTerrorLevel() const;
     void cleanup();
     void askPlayersInfo();
@@ -76,6 +84,7 @@ private:
     void setupPerkCards();
 
 public:
+    void increaseTerrorLevel();
     GameController();
     ~GameController();
 
