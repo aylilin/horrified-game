@@ -1,7 +1,7 @@
 #pragma once   //for not including headers several times
 #include "item.h"
 #include "itemBag.h"
-//#include "map.h"
+#include "map.h"
 #include "perkCard.h"
 
 #include <vector>
@@ -36,7 +36,6 @@ public:
     void pickup(ItemBag& bag);
     void dropAllItems(ItemBag& bag);
     void guide(Map& map);
-    //void advance();
     //special action is just for archeologist
     
     void set_location(const std::string& newLocation);
