@@ -15,5 +15,6 @@ std::string LateIntoNightCard::get_description() const
 void LateIntoNightCard::apply(Hero& currentHero , std::vector<Hero*>& , std::vector<Monster*>& , ItemBag& , Map& , bool&) 
 {
     currentHero.addExtraActions(2);
+    currentHero.resetActions();
     std::cout << currentHero.get_name() << " has 2 extra actions now!" << std::endl;
 }
