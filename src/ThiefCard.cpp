@@ -3,7 +3,10 @@
 #include "../include/monster.h"
 #include "../include/hero.h"
 #include "../include/dice.h"
+#include "../include/game-controller.h"
+
 #include <iostream>
+#include <unordered_map>
 
 std::string ThiefCard::get_name() const
 {
@@ -15,8 +18,14 @@ std::string ThiefCard::get_description() const
     return "Invisible Man moves 1, attacks once.";
 }
 
-void ThiefCard::apply(Map& map , std::vector<Monster*>& monsters , std::vector<Hero*>& heroes , Dice&)
+void ThiefCard::apply(Map& map , std::vector<Monster*>& monsters , std::vector<Hero*>& heroes , Dice& dice , GameController& controller)
 {
+    auto items = map.get_itemBag().drawRandomItems(2);
+    for (const auto& item : items)
+    {
+        map.placeItem(item);
+    }
+
     Monster* invisibleMan = nullptr;
     for (Monster* m : monsters)
     {
@@ -35,28 +44,49 @@ void ThiefCard::apply(Map& map , std::vector<Monster*>& monsters , std::vector<H
 
     //moving one step
     std::string current = invisibleMan->get_currentLocation();
-    std::string next;
-    std::cout << "[Invisible Man] current location : " << current << "\n";
-    std::cout << "enter distination : ";
-    std::getline(std::cin, next);
+    std::string nearest = map.findNearestHeroLocation(current , heroes);
 
-    if (map.areConnected(current, next))
+    if (!nearest.empty() && map.areConnected(current , nearest))
     {
-        map.set_characterLocation(invisibleMan->get_name(), next);
-        invisibleMan->set_location(next);
-        std::cout << "Invisible man moved to " << next << "\n";
-    } else {
-        std::cout << "invalid move...\n";
+        map.set_characterLocation(invisibleMan->get_name() , nearest);
+        invisibleMan->set_location(nearest);
+        std::cout << "Invisible Man moved to " << nearest << "\n";
+    }else{
+        std::cout << "No valid move for Invisible Man.\n";
         return;
     }
 
-    //attack with hero
-    for (Hero* h : heroes)
+    std::vector<DiceFace> faces = dice.rollMultiple(3);
+    int strikes = dice.countStrikes(faces);
+    int power = dice.countPowers(faces);
+
+    if (strikes > 0)
     {
+        bool attacked = false;
+        //attacks with hero
+        for (Hero* h : heroes)
+        {
         if (h->get_location() == invisibleMan->get_currentLocation())
         {
             invisibleMan->attack(*h);
             break;
         }
+    }
+    if (!attacked)
+    {
+        std::vector<Villager*> villagersHere = map.getVillagersAt(invisibleMan->get_currentLocation());
+        if (!villagersHere.empty())
+        {
+            map.removeVillager(villagersHere.front());
+            controller.increaseTerrorLevel();
+            std::cout << "A villager was attacked by Invisible Man! Terror Level is increased.\n";
+        }else{
+            std::cout << "No one attacks at " << invisibleMan->get_currentLocation() << "\n";
+        }
+    }
+    }
+    if (power > 0)
+    {
+        std::cout << "Invisible Man used power effect...\n";
     }
 }
