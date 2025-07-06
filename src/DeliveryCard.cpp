@@ -4,6 +4,8 @@
 #include "../include/hero.h"
 #include "../include/villager.h"
 #include "../include/dice.h"
+#include "../include/game-controller.h"
+
 #include <iostream>
 
 std::string DeliveryCard::get_name() const
@@ -16,8 +18,14 @@ std::string DeliveryCard::get_description() const
     return "Invisible Man moves 2 steps, attacks once, and a villager appears.";
 }
 
-void DeliveryCard::apply(Map& map , std::vector<Monster*>& monsters , std::vector<Hero*>& heroes , Dice&)
+void DeliveryCard::apply(Map& map , std::vector<Monster*>& monsters , std::vector<Hero*>& heroes , Dice& dice , GameController& controller)
 {
+    auto items = map.get_itemBag().drawRandomItems(3);
+    for (const auto& item : items)
+    {
+        map.placeItem(item);
+    }
+
     Monster* invisibleMan = nullptr;
 
     for (Monster* m : monsters)
@@ -36,32 +44,21 @@ void DeliveryCard::apply(Map& map , std::vector<Monster*>& monsters , std::vecto
     }
 
     //moving 2 steps
-    for (int i = 0; i < 2; ++i)
-    {
-        std::string current = invisibleMan->get_currentLocation();
-        std::string next;
-        std::cout << "[Invisible Man] current location : " << current << "\n";
-        std::cout << "move " << i + 1 << " enter distination : ";
-        std::getline(std::cin, next);
+    map.moveMonster(invisibleMan , 2 , dice);
 
-        if (map.areConnected(current, next))
-        {
-            map.set_characterLocation(invisibleMan->get_name(), next);
-            invisibleMan->set_location(next);
-        } else {
-            std::cout << "invalid move...\n";
-            break;
-        }
+    std::vector<DiceFace> faces = dice.rollMultiple(3);
+
+    int strikes = dice.countStrikes(faces);
+    int powers = dice.countPowers(faces);
+
+    if (strikes > 0)
+    {
+        map.monsterStrike(invisibleMan , strikes , heroes , controller);
     }
 
-    //attack with hero
-    for (Hero* h : heroes)
+    if (powers > 0)
     {
-        if (h->get_location() == invisibleMan->get_currentLocation())
-        {
-            invisibleMan->attack(*h);
-            break;
-        }
+        std::cout << "Invisible Man's power activated\n";
     }
 
     Villager* v = new Villager("Unnamed", "Hospital");
