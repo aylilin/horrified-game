@@ -17,11 +17,11 @@ GameController::~GameController()
 
 void GameController::setup()
 {
-    // ساخت هیولاها
+    //creating heroes
     monsters.push_back(new Dracula());
     monsters.push_back(new InvisibleMan());
 
-    // اضافه‌کردن کارت‌های هیولا
+    //adding monster cards
     monsterDeck.push_back(std::make_unique<FormOfTheBatCard>());
     monsterDeck.push_back(std::make_unique<SunriseCard>());
     monsterDeck.push_back(std::make_unique<ThiefCard>());
@@ -30,12 +30,6 @@ void GameController::setup()
 
 }
 
-// void GameController::shuffleMonsterDeck()
-// {
-//     std::random_device rd;
-//     std::mt19937 g(rd());
-//     std::shuffle(monsterDeck.begin(), monsterDeck.end(), g);
-// }
 
 void GameController::showTerrorLevel() const
 {
@@ -97,20 +91,6 @@ void GameController::determineStartingPlayer()
     std::cout << "\nStarting player: " << currentPlayerName << "\n";
 }
 
-void GameController::setupVillagers()
-{
-    allVillagers = {
-        Villager("Dr.Cranley", "Precinct") , Villager("Dr.Reed", "Camp") , Villager("Prof.Pearson", "Museum") ,
-        Villager("Maleva", "Shop") , Villager("Fritz", "Institute") , Villager("Wilbur&Chick" , "Dungeon") , Villager("Maria" , "Camp")
-    };
-
-    for (Villager& v : allVillagers)
-    {
-        map.addVillager(&v);
-    }
-}
-
-
 void GameController::assignHeroesToPlayers()
 {
     std::cout << "\nHeroes:\n";
@@ -169,9 +149,10 @@ void GameController::displayGameState() const
         std::cout << "LOCATION :  " << hero->get_location() << "\n";
         std::cout << "HEALTH : " << hero->get_health() << "\n";
         std::cout << "REMAINING ACTIONS : " << hero->get_remainingActions() << "\n";
-        std::cout << "ITEMS : ";
 
         const auto& inv = hero->get_inventory();
+        std::cout << "ITEMS : ";
+
         if (inv.empty())
         {
             std::cout << "There are no items...";
@@ -183,6 +164,21 @@ void GameController::displayGameState() const
         }
         std::cout << "\n---------------------------\n";
     }
+
+    std::cout << '\t' << "Items on the map :\n";
+    const auto& mapItems = map.get_getAllItems();
+    if (mapItems.empty())
+    {
+        std::cout << "no items currently on the map.\n";
+    }else{
+        for (const auto& item : mapItems)
+        {
+            std::cout << "- " << item.toString() << " at " << item.get_location() << '\n';
+        }
+    }
+    
+    std::cout << "\n---------------------------\n";
+    map.displayAvailableVillagers();
 }
 
 void GameController::printActionHelp() const
@@ -206,15 +202,15 @@ void GameController::printSingleActionHelp(int n) const
             break;
 
         case 2:
-            std::cout << "2. Guide:\n";
-            std::cout << "- Allows you to move a villager from your current location along with you.\n";
-            std::cout << "- You must be in the same location as the villager.\n";
+            std::cout << "2. Pickup:\n";
+            std::cout << "- Picks up one or more items at your current location.\n";
+            std::cout << "- Items help you defeat monsters or activate special actions.\n";
             break;
 
         case 3:
-            std::cout << "3. Pickup:\n";
-            std::cout << "- Picks up one or more items at your current location.\n";
-            std::cout << "- Items help you defeat monsters or activate special actions.\n";
+            std::cout << "3. Guide:\n";
+            std::cout << "- Allows you to move a villager from your current location along with you.\n";
+            std::cout << "- You must be in the same location as the villager.\n";
             break;
 
         case 4:
@@ -257,7 +253,8 @@ void GameController::heroPhase(Hero* currentHero)
         std::cout << "4. Special Ability\n";
         std::cout << "5. Use Perk Card\n";
         std::cout << "6. End Turn\n";
-        std::cout << "Enter your choice (or 'help <number>'): ";
+        std::cout << "Enter your choice (or 'help <number>'): \n";
+        std::cout << "or enter 0 to exit the game :)";
 
         std::string input;
         std::getline(std::cin, input);
@@ -326,16 +323,39 @@ void GameController::monsterPhase()
     auto& card = monsterDeck.back();
     std::cout << "\n--- Monster Phase ---\n";
     std::cout << "Card: " << card->get_name() << "\n";
+    try{
 
-    card->apply(map, monsters, heroes, dice);
+    card->apply(map, monsters, heroes, dice , *this);
+    } catch(const std::exception& e) {
+        std::cerr << "Error applying monster card: " << e.what() << "\n";
+    }
 
     monsterDeck.pop_back();
+
+    for (Monster* m : monsters)
+    {
+        std::string location = m->get_currentLocation();
+        std::vector<Villager*> victims = map.getVillagersAt(location);
+
+        for (Villager* v : victims)
+        {
+            std::cout << "Villager " << v->get_name() << " was killed by " << m->get_name() << "!\n";
+            map.removeVillager(v);
+            increaseTerrorLevel();
+        }
+    }
+}
+
+void GameController::increaseTerrorLevel()
+{
+    terrorLevel++;
 }
 
 void GameController::checkDefeat(Hero* hero)
 {
     if (!hero->isAlive())
     {
+        increaseTerrorLevel();
         hero->dropAllItems(itemBag);
         // optional: teleport hero to safe location
         hero->set_location("Hospital");
@@ -413,21 +433,6 @@ void GameController::setUpGame()
     std::cout << "----------------------------------------\n";
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void GameController::run()
 {
     std::cout << "\n=== Welcome to Horrified ===\n";
@@ -447,7 +452,8 @@ void GameController::run()
 
     skipMonsterPhase = false;
     
-    for (Hero* h : heroes) {
+    for (Hero* h : heroes)
+    {
         if (h->isAlive())
         {
             heroPhase(h);
