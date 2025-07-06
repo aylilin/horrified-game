@@ -2,9 +2,6 @@
 #include <map>
 #include <stdexcept>
 #include <sstream>
-// const std::map<std::string , std::tuple<Item::Type , int , std::string>> ITEM_DEFENITIONS =
-// {"Flower" , {Item::Type::YELLOW , 2 , "Docks"}} ,
-// {"Flower" , {Item::Type::YELLOW , 2 , "Docks"}} ,
 
 void Item::moveTo(const std::string& newLocation)
 {
