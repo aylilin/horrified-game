@@ -25,3 +25,27 @@ std::vector<DiceFace> Dice::rollMultiple(int count)
         results.push_back(rollOne());
     return results;
 }
+
+int Dice::countStrikes(const std::vector<DiceFace>& faces)
+{
+    int count = 0;
+    for (const auto& face : faces)
+    {
+        if (face == DiceFace::Strike)
+        {
+            ++count;
+        }
+    }
+    return count;
+}
+
+int Dice::countPowers(const std::vector<DiceFace>& faces) const
+{
+    int count = 0;
+    for (DiceFace face : faces)
+    {
+        if (face == DiceFace::Power)
+        count++;
+    }
+    return count;
+}
