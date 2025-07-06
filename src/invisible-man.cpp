@@ -9,7 +9,6 @@ void InvisibleMan::useSpecialPower()
     std::cout << "Invisible Man uses STALK UNSEEN!" << std::endl;
 
 }
-//functions are not complete!!!
 
 bool InvisibleMan::checkDefeatConditions() const
 {
