@@ -20,25 +20,24 @@ void BreakOfDawnCard::apply(Hero& , std::vector<Hero*>& allheroes, std::vector<M
     std::cout << "The monster phase was passed this turn.\n";
 
     int placed = 0;
-    while (placed < 2 && !bag.isEmpty()) 
-    {
         for (Hero* hero : allheroes)
         {
-            if (!bag.isEmpty())
+            if (placed >= 2 || bag.isEmpty())
             {
+                break;
+            }
                 auto items = bag.drawRandomItems(1);
                 if (!items.empty())
                 {
                     Item item = items[0];
-                }
-            }else {
-        std::cout << "Item bag is empty!\n";
-    }
-}
+                    hero->addItem(item);
+                    placed++;
 
+                    std::cout << hero->get_name() << " received item " << item.toString() << " -> " << item.get_location() << "\n";
+                }
+            }
     if (placed < 2) 
     {
         std::cout << "The item bag had less than 2 items...\n";
     }
-}
 }
