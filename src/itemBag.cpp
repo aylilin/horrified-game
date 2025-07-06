@@ -51,15 +51,16 @@ bool ItemBag::isEmpty() const
 
 bool ItemBag::transferItemToHero(const std::string& location, Hero& hero)
 {
-    for (auto it = items.begin() ; it != items.end() ; it++)
+    auto it = std::find_if(items.begin() , items.end() , [&](const Item& item) 
     {
-        if (it->get_location() == location)
-        {
-            Item item = *it;
-            items.erase(it);  //temporary
-            hero.addItem(item);
-            return true;
-        }
+        return item.get_location() == location;
+    });
+
+    if (it != items.end())
+    {
+        hero.addItem(*it);
+        items.erase(it);
+        return true;
     }
     return false;
 }
