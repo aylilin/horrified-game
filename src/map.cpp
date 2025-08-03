@@ -88,7 +88,7 @@ void Map::placeItem(const Item& item)
     itemsOnMap.push_back(item);
 }
 
-const std::vector<Item>& Map::get_getAllItems() const
+const std::vector<Item>& Map::get_AllItems() const
 {
     return items;
 }
@@ -146,59 +146,6 @@ void Map::markVillagerAsGuided(const std::string& name)
     }
 }
 
-void Map::printMap() const 
-{
-    std::cout << R"(
-                           ┌────────────┐
-                           │ Graveyard  │
-                           └─────┬──────┘
-                                 │
-                           ┌─────▼──────┐
-                           │   Crypt    │
-                           └─────┬──────┘
-                                 │
-                           ┌─────▼──────┐
-                           │   Tower    │
-                           └─────┬──────┘
-                                 │
-                           ┌─────▼──────┐
-                           │  Dungeon   │
-                           └─────┬──────┘
-                                 │
-                           ┌─────▼──────┐
-                           │   Docks    │
-                           └─────┬──────┘
-                                 │
-        ┌────────────┐     ┌─────▼──────┐     ┌────────────┐
-        │  Precinct  │◀───▶│  Museum    │◀───▶│  Institute  │
-        └────────────┘     └─────┬──────┘     └────────────┘
-                                 │
-                           ┌─────▼──────┐
-                           │  Theater   │
-                           └─────┬──────┘
-                                 │
-                           ┌─────▼──────┐
-                           │    Inn     │
-                           └─────┬──────┘
-                                 │
-        ┌────────────┐     ┌─────▼──────┐     ┌────────────┐
-        │ Laboratory │◀───▶│  Mansion   │◀───▶│  Hospital   │
-        └────────────┘     └────────────┘     └────────────┘
-
-        ┌────────────┐     ┌────────────┐
-        │   Shop     │     │   Camp     │
-        └────────────┘     └────────────┘
-
-                           ┌────────────┐
-                           │    Barn    │
-                           └─────┬──────┘
-                                 │
-                           ┌─────▼──────┐
-                           │    Cave    │
-                           └────────────┘
-    )" << "\n";
-}
-
 std::vector<std::string>  Map::displayAvailableVillagers(sf::RenderWindow& window) const
 {
     std::vector<std::string> villagerTexts;
@@ -209,16 +156,14 @@ std::vector<std::string>  Map::displayAvailableVillagers(sf::RenderWindow& windo
         return villagerTexts;
     }
 
+    float yOffset = 50.f;
     sf::Text title("      Available Villagers            " , font , 20);
     title.setFillColor(sf::Color::White);
     title.setPosition(120.f , yOffset);
     yOffset += 30.f;
     window.draw(title);
 
-    float yOffset = 200.f;
-    // std::cout << "\n═══════════════════════════════\n";
-    // std::cout <<   "      Available Villagers            \n";
-    // std::cout <<   "═══════════════════════════════\n";
+    float yOffset2 = 200.f;
 
     for (const Villager* v : villagers)
     {
@@ -237,12 +182,10 @@ std::vector<std::string>  Map::displayAvailableVillagers(sf::RenderWindow& windo
         villagerTexts.push_back(text);
         sf::Text villagerText(text , font , 18);
         villagerText.setFillColor(sf::Color::White);
-        villagerText.setPosition(120.f , yOffset);
-        yOffset += 20.f;
+        villagerText.setPosition(120.f , yOffset2);
+        yOffset2 += 20.f;
         window.draw(villagerText);
-        // std::cout << "- " << v->get_name() << " (Current: " << v->get_currentLocation() << ", Safe: " << v->get_safeLocation() << ") --> Status: " << status << "\n";
     }
-    // std::cout << "═══════════════════════════════\n";
     return villagerTexts;
 }
 
