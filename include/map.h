@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
 #include <map>
@@ -35,7 +36,7 @@ public:
     const std::vector<Item>& get_itemsAt(const std::string& location) const;
     std::vector<Item>& get_itemsAt(const std::string& location); 
     ItemBag& get_itemBag();
-    const std::vector<Item>& get_getAllItems() const;
+    const std::vector<Item>& get_AllItems() const;
 
 
     //for monster and hero
@@ -63,7 +64,6 @@ public:
     void removeVillager(Villager* villager);
 
 
-    void printMap() const;
     void printItems() const;
 
 private:
