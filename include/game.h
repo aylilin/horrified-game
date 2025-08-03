@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include "game-controller.h"
+
 #include <vector>
 #include <string>
 #include <map>
@@ -8,9 +10,10 @@
 class Game {
 public:
     Game(sf::RenderWindow& window);
-    void startGame(); // تابع اصلی که همه منطق رو مدیریت می‌کنه
+    void startGame();
 
 private:
+    sf::Font gameFont;
     sf::RenderWindow& window;
     bool typingName;
     std::string nameInput, timeInput;
