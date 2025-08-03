@@ -20,6 +20,7 @@
 #include "dice.h"
 #include "item.h"
 #include "GameView.h"
+#include "game.h"
 
 #include "FormOfTheBatCard.h"
 #include "SunriseCard.h"
@@ -47,6 +48,7 @@ struct PlayerInfo
 class GameController
 {
 private:
+    sf::RenderWindow window;
     Map map;
     ItemBag itemBag;
     Dice dice;
