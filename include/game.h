@@ -7,7 +7,8 @@
 #include <string>
 #include <map>
 
-class Game {
+class Game
+{
 public:
     Game(sf::RenderWindow& window);
     void startGame();
@@ -21,6 +22,11 @@ private:
     std::vector<std::string> playerNames, playerTimes;
     bool inputDone;
 
+    GameController controller;
+    void renderActionMenu(sf::RenderWindow& window);
+    void handleActionMenuClick(const sf::Vector2f& mousePos);
+
+
     std::vector<std::string> heroList;
     std::vector<sf::RectangleShape> heroButtons;
     std::vector<sf::Text> heroLabels;
@@ -31,6 +37,8 @@ private:
     std::map<std::string, sf::Texture> heroTextures;
     std::map<std::string, sf::Sprite> heroSprites;
     std::map<std::string, std::string> heroStartingLocations;
+    std::map<std::string, sf::RectangleShape> locationHitboxes;
+
 
     sf::Texture bgTexture, inputBgTexture, mapTexture, draculaTexture, invisibleTexture;
     sf::Texture courierTexture, scientistTexture, archaeologistTexture, mayorTexture;
