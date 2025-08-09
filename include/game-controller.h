@@ -19,8 +19,8 @@
 #include "villager.h"
 #include "dice.h"
 #include "item.h"
-#include "GameView.h"
-#include "game.h"
+// #include "GameView.h"
+// #include "game.h"
 
 #include "FormOfTheBatCard.h"
 #include "SunriseCard.h"
@@ -43,6 +43,7 @@ struct PlayerInfo
 {
     std::string name;
     std::chrono::system_clock::time_point lastGarlicTime;
+    std::string heroName;
 };
 
 class GameController
@@ -57,9 +58,11 @@ private:
     std::vector<std::unique_ptr<MonsterCard>> monsterDeck;
     std::vector<std::unique_ptr<PerkCard>> perkDeck;
     std::map<std::string, Hero*> playerToHero;
-    std::map<std::string , std::string> getHeroLocations() const;
-    std::map<std::string , std::string> getMonsterLocations() const;
     std::vector<Villager> allVillagers;
+
+    std::map<std::string, std::string> heroStartLocations =
+    {{"Archaeologist" , "Docks"} , {"Mayor" , "Theatre"} , {"Courier" , "Shop"} , {"Scientist" , "Institute"}};
+
 
     sf::Font gameFont;
 
@@ -73,7 +76,6 @@ private:
     int turn = 1;
 
     void setup();
-    void assignHeroesToPlayers();
 
     void showTerrorLevel() const;
     void cleanup();
@@ -85,7 +87,6 @@ private:
     std::chrono::system_clock::time_point get_timePointFromInput();
     void checkDefeat(Hero* hero);
     void setupVillagers();
-    void setUpGame(sf::RenderWindow&);
     void heroPhase(sf::RenderWindow&, Hero* currentHero);
     void monsterPhase(sf::RenderWindow&);
 
@@ -93,7 +94,14 @@ private:
     void setupPerkCards(sf::RenderWindow&);
 
 public:
+    std::map<std::string, std::string> getHeroLocations() const;
+
     void increaseTerrorLevel();
+
+    std::chrono::system_clock::time_point convertToTimePoint(const std::string& timeStr);
+    void setUpGame(sf::RenderWindow&);
+    void setupPlayers(const std::vector<PlayerInfo>& playerInfos);
+
     GameController();
     ~GameController();
 
