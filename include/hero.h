@@ -1,7 +1,6 @@
 #pragma once   //for not including headers several times
 #include "item.h"
-#include "itemBag.h"
-#include "map.h"
+// #include "map.h"
 #include "perkCard.h"
 
 #include <vector>
