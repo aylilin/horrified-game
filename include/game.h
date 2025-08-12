@@ -21,6 +21,7 @@ private:
     int currentPlayerIndex;
     std::vector<std::string> playerNames, playerTimes;
     bool inputDone;
+    bool awaitingMoveDestinations = false;
 
     GameController controller;
     void renderActionMenu(sf::RenderWindow& window);
