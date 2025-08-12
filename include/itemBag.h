@@ -5,7 +5,7 @@
 #include "item.h"
 
 class Hero;
-class map;
+class Map;
 
 class ItemBag
 {
