@@ -59,6 +59,7 @@ private:
     std::vector<std::unique_ptr<PerkCard>> perkDeck;
     std::map<std::string, Hero*> playerToHero;
     std::vector<Villager> allVillagers;
+    std::set<std::string> getConnectedLocations(const std::string& location) const;
 
     std::map<std::string, std::string> heroStartLocations =
     {{"Archaeologist" , "Docks"} , {"Mayor" , "Theatre"} , {"Courier" , "Shop"} , {"Scientist" , "Institute"}};
@@ -66,7 +67,7 @@ private:
 
     sf::Font gameFont;
 
-    bool skipMonsterPhase = false; 
+    bool skipMonsterPhase = false;
 
 
     PlayerInfo player1, player2;
@@ -90,11 +91,19 @@ private:
     void heroPhase(sf::RenderWindow&, Hero* currentHero);
     void monsterPhase(sf::RenderWindow&);
 
-
     void setupPerkCards(sf::RenderWindow&);
 
 public:
-    std::map<std::string, std::string> getHeroLocations() const;
+    std::map<std::string , std::string> getHeroLocations() const;
+    Hero* getHero(const std::string& heroName);
+    const Hero* getHero(const std::string& heroName) const;
+    std::string getHeroLocation(const std::string& heroName) const;
+    bool moveHero(const std::string& heroName , const std::string& toLocation);
+    bool heroPickUpItem(const std::string& heroName , const std::string& location);
+    const std::vector<Item>& getItemsAtLocation(const std::string& location) const;
+
+
+
 
     void increaseTerrorLevel();
 
