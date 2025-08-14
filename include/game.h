@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "game-controller.h"
+#include "locations.h"
 
 #include <vector>
 #include <string>
@@ -12,7 +13,7 @@ class Game
 public:
     Game(sf::RenderWindow& window);
     void startGame();
-
+    void initHeroSpritesAfterSelection(const std::vector<std::string>& selectedHeroes , const sf::Sprite& mapSprite , const std::map<std::string , Position>& locations , GameController& controller);
 private:
     sf::Font gameFont;
     sf::RenderWindow& window;
@@ -35,17 +36,17 @@ private:
     std::vector<std::string> selectedHeroes;
     int currentHeroPlayer;
 
-    std::map<std::string, sf::Texture> heroTextures;
-    std::map<std::string, sf::Sprite> heroSprites;
-    std::map<std::string, std::string> heroStartingLocations;
-    std::map<std::string, sf::RectangleShape> locationHitboxes;
+    std::map<std::string , sf::Texture> heroTextures;
+    std::map<std::string , sf::Sprite> heroSprites;
+    std::map<std::string , std::string> heroStartingLocations;
+    std::map<std::string , sf::RectangleShape> locationHitboxes;
 
 
-    sf::Texture bgTexture, inputBgTexture, mapTexture, draculaTexture, invisibleTexture;
-    sf::Texture courierTexture, scientistTexture, archaeologistTexture, mayorTexture;
-    sf::Sprite bgSprite, inputBgSprite, mapSprite, draculaSprite, invisibleSprite;
-    sf::Sprite courierSprite, scientistSprite, archaeologistSprite, mayorSprite;
+    sf::Texture bgTexture , inputBgTexture , mapTexture , draculaTexture , invisibleTexture;
+    sf::Texture courierTexture , scientistTexture , archaeologistTexture , mayorTexture;
+    sf::Sprite bgSprite , inputBgSprite , mapSprite , draculaSprite , invisibleSprite;
+    sf::Sprite courierSprite , scientistSprite , archaeologistSprite , mayorSprite;
     sf::Font font;
-    sf::RectangleShape startButton, exitButton, nameBox, timeBox, continueButton;
-    sf::Text startText, exitText, nameLabel, nameText, timeLabel, timeText, continueText, titleText;
+    sf::RectangleShape startButton , exitButton , nameBox , timeBox , continueButton;
+    sf::Text startText , exitText , nameLabel , nameText , timeLabel , timeText , continueText , titleText;
 };
