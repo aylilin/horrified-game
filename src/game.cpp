@@ -8,7 +8,136 @@
 #include <sstream>
 #include <iomanip>
 
-Game::Game(sf::RenderWindow& window) : window(window) , typingName(true) , currentPlayerIndex(-1) , inputDone(false) , gamePlayStarted(false) , currentHeroPlayer(0) {}
+Game::Game(sf::RenderWindow& window) : window(window) , typingName(true) , currentPlayerIndex(-1) , inputDone(false) , gamePlayStarted(false) , currentHeroPlayer(0)
+{
+    if (!gameFont.loadFromFile("../build/ManufacturingConsent-Regular.ttf"))
+    {
+        std::cerr << "Failed to load font!\n";
+        return;
+    }
+}
+
+void Game::renderActionMenu(sf::RenderWindow& window)
+{
+    sf::RectangleShape actionPanel(sf::Vector2f(300.f , 300.f));
+    actionPanel.setPosition(50.f , 100.f);
+    actionPanel.setFillColor(sf::Color(30 , 30 , 30 , 200));
+    window.draw(actionPanel);
+
+    std::vector<std::string> actions =
+    {"Move" , "Pickup" , "Guide" , "Use Perk" , "End Turn"};
+
+    float buttonY = 120.f;
+    for (const auto& action : actions)
+    {
+        sf::RectangleShape button(sf::Vector2f(250.f , 40.f));
+        button.setPosition(75.f , buttonY);
+        button.setFillColor(sf::Color(100 , 100 , 200));
+        window.draw(button);
+
+        sf::Text label(action , gameFont , 20);
+        label.setPosition(90.f , buttonY + 5.f);
+        label.setFillColor(sf::Color::White);
+        window.draw(label);
+
+        buttonY += 50.f;
+    }
+}
+
+void Game::handleActionMenuClick(const sf::Vector2f& mousePos)
+{
+    std::vector<std::string> actions =
+    {"Move", "Pickup", "Guide", "Use Perk", "End Turn"};
+
+    float buttonY = 120.f;
+    for (const auto& action : actions)
+    {
+        sf::FloatRect buttonRect(75.f , buttonY , 250.f , 40.f);
+        if (buttonRect.contains(mousePos))
+        {
+            std::cout << "Action selected: " << action << "\n";
+
+            if (action == "Move")
+            {
+                awaitingMoveDestinations = true;
+            }
+            else if (action == "Pickup")
+        {
+            std::string heroName = selectedHeroes[currentHeroPlayer];
+            std::string loc = controller.getHeroLocation(heroName);
+            const auto& items = controller.getItemsAtLocation(loc);
+
+            if (!items.empty())
+            {
+                bool ok = controller.heroPickUpItem(heroName , loc);
+                if (!ok)
+                {
+                    std::cerr << "Failed to pick up item for " << heroName << " at " << loc << "\n";
+                } else {
+            //remainingActions-- 
+            // controller.heroPhase
+                }
+            } else
+            {
+                std::cout << "No items at location: " << loc << '\n';
+            }
+        }
+            else if (action == "Guide")
+            {
+                // controller.guide(...);
+            }
+            else if (action == "Use Perk")
+            {
+                // controller.usePerk(...);
+            }
+            else if (action == "End Turn")
+            {
+
+            }
+
+            break;
+        }
+
+        buttonY += 50.f;
+    }
+}
+
+void Game::initHeroSpritesAfterSelection(const std::vector<std::string>& selectedHeroes , const sf::Sprite& mapSprite , const std::map<std::string, Position>& locations , GameController& controller)
+{
+    int i = 0;
+    heroSprites.clear();
+    heroTextures.clear();
+
+    auto heroLocs = controller.getHeroLocations();
+
+    for (const auto& heroName : selectedHeroes)
+    {
+        if (heroName.empty()) continue;
+
+        auto& texture = heroTextures[heroName];
+        if (!texture.loadFromFile("../build/Heros/" + heroName + ".png"))
+        {
+            std::cerr << "Failed to load hero image for " << heroName << "\n";
+            continue;
+        }
+
+        sf::Sprite sprite;
+        sprite.setTexture(heroTextures[heroName]);
+        sprite.setScale(0.1f, 0.1f);
+
+        auto locIt = heroLocs.find(heroName);
+        if (locIt != heroLocs.end())
+        {
+            auto posIt = locations.find(locIt->second);
+            if (posIt != locations.end())
+            {
+                sprite.setPosition(posIt->second.x , posIt->second.y);
+            }
+        }
+        heroSprites[heroName] = sprite;
+    }
+}
+
 void Game::startGame()
 {
     //for frame
@@ -23,6 +152,11 @@ void Game::startGame()
     std::vector<std::string> playerTimes(2);
     bool inputDone = false;
 
+    heroStartingLocations["Archaeologist"] = "Docks";
+    heroStartingLocations["Mayor"] = "Theater";
+    heroStartingLocations["Courier"] = "Shop";
+    heroStartingLocations["Scientist"] = "Institute";
+
     //hero screen
     bool showHeroSelectionScreen = false;
     std::vector<std::string> heroList = {"Archaeologist" , "Mayor" , "Courier" , "Scientist"};
@@ -32,47 +166,8 @@ void Game::startGame()
 
     std::vector<std::string> selectedHeroes(2);
     int currentHeroPlayer;
+    std::map<std::string, sf::RectangleShape> locationHitboxes;
 
-    //hero selected
-    std::map<std::string , sf::Texture> heroTextures;
-    std::map<std::string , sf::Sprite> heroSprites;
-    std::map<std::string , std::string> heroStartingLocations =
-    {{"Archaeologist" , "Docks"} , {"Mayor" , "Theatre"} , {"Courier" , "Shop"} , {"Scientist" , "Institute"}};
-
-    for (const auto& heroName : selectedHeroes)
-    {
-        if (heroName.empty()) continue;
-
-        sf::Texture texture;
-        if (!texture.loadFromFile("../build/Heros/" + heroName + ".png"))
-        {
-            std::cerr << "Failed to load hero selected image!\n";
-            continue;
-        }
-        heroTextures[heroName] = texture;
-
-        sf::Sprite sprite;
-        sprite.setTexture(heroTextures[heroName]);
-        sprite.setScale(0.16f , 0.16f);
-
-        auto it = heroStartingLocations.find(heroName);
-        if (it != heroStartingLocations.end())
-        {
-            const std::string& locationKey = it->second;
-            auto posIt = locations.find(locationKey);
-            if (posIt != locations.end())
-            {
-                const Position& pos = posIt->second;
-                sprite.setPosition(pos.x , pos.y);
-            } else{
-                std::cerr << "Location not found for : " << locationKey << "\n";
-            }
-        } else{
-                std::cerr << "No starting location for hero : " << heroName << "\n";
-            }
-
-        heroSprites[heroName] = sprite;
-    }
 
     //map screen
     bool showMapScreen = false;
@@ -119,13 +214,6 @@ void Game::startGame()
     float posY = (windowSize.y - spriteBounds.height) / 2.f;
     bgSprite.setPosition(posX , posY);
 
-    //display font
-    sf::Font font;
-    if (!font.loadFromFile("../build/ManufacturingConsent-Regular.ttf"))
-    {
-        std::cerr << "Failed to load font.\n";
-        exit(-1);
-    }
     //map
     sf::Texture mapTexture;
     sf::Sprite mapSprite;
@@ -141,6 +229,15 @@ void Game::startGame()
     float scale2Y = 800.f / textSize.y;
     float scale2 = std::min(scale2X , scale2Y);
     mapSprite.setScale(scale , scale);
+
+    for (const auto& [locName, pos] : locations)
+    {
+        sf::RectangleShape hitbox(sf::Vector2f(20.f , 20.f));
+        hitbox.setFillColor(sf::Color(255 , 0 , 0 , 150));
+        hitbox.setPosition(pos.x , pos.y);
+        locationHitboxes[locName] = hitbox;
+    }
+
 
 
     //load Dracula image
@@ -173,77 +270,9 @@ void Game::startGame()
     invisibleSprite.setScale(0.1f , 0.1f);
 
     auto it1 = locations.find("Inn");
-    if (it != locations.end())
+    if (it1 != locations.end())
     {
-        invisibleSprite.setPosition(sf::Vector2f(it->second.x , it->second.y));
-    }
-
-    //load courier image
-    sf::Texture courierTexture;
-    if (!courierTexture.loadFromFile("../build/Heros/Courier.png"))
-    {
-        std::cerr << "Failed to load Courier image!\n";
-    }
-
-    sf::Sprite courierSprite;
-    courierSprite.setTexture(courierTexture);
-    courierSprite.setScale(0.1f , 0.1f);
-
-    auto it2 = locations.find("Shop");
-    if (it != locations.end())
-    {
-        courierSprite.setPosition(sf::Vector2f(it->second.x , it->second.y));
-    }
-
-    //load scientist image
-    sf::Texture scientistTexture;
-    if (!scientistTexture.loadFromFile("../build/Heros/Scientist.png"))
-    {
-        std::cerr << "Failed to load Scientist image!\n";
-    }
-
-    sf::Sprite scientistSprite;
-    scientistSprite.setTexture(scientistTexture);
-    scientistSprite.setScale(0.1f , 0.1f);
-
-    auto it3 = locations.find("Institute");
-    if (it != locations.end())
-    {
-        scientistSprite.setPosition(sf::Vector2f(it->second.x , it->second.y));
-    }
-
-    //load archaeologist image
-    sf::Texture archaeologistTexture;
-    if (!archaeologistTexture.loadFromFile("../build/Heros/Archaeologist.png"))
-    {
-        std::cerr << "Failed to load Archaeologist image!\n";
-    }
-
-    sf::Sprite archaeologistSprite;
-    archaeologistSprite.setTexture(archaeologistTexture);
-    archaeologistSprite.setScale(0.1f , 0.1f);
-
-    auto it4 = locations.find("Docks");
-    if (it != locations.end())
-    {
-        scientistSprite.setPosition(sf::Vector2f(it->second.x , it->second.y));
-    }
-
-    //load mayor image
-    sf::Texture mayorTexture;
-    if (!mayorTexture.loadFromFile("../build/Heros/Mayor.png"))
-    {
-        std::cerr << "Failed to load Mayor image!\n";
-    }
-
-    sf::Sprite mayorSprite;
-    mayorSprite.setTexture(mayorTexture);
-    mayorSprite.setScale(0.1f , 0.1f);
-
-    auto it5 = locations.find("Theater");
-    if (it != locations.end())
-    {
-        mayorSprite.setPosition(sf::Vector2f(it->second.x , it->second.y));
+        invisibleSprite.setPosition(sf::Vector2f(it1->second.x , it1->second.y));   
     }
 
     //start button
@@ -252,7 +281,7 @@ void Game::startGame()
     startButton.setPosition(300.f,500.f);
 
     //start text
-    sf::Text startText("Start" , font , 28);
+    sf::Text startText("Start" , gameFont , 28);
     startText.setFillColor(sf::Color::White);
     startText.setPosition(startButton.getPosition().x + 40 , startButton.getPosition().y + 10);
 
@@ -262,7 +291,7 @@ void Game::startGame()
     exitButton.setPosition(300.f,580.f);
 
     //exit text
-    sf::Text exitText("Exit" , font , 28);
+    sf::Text exitText("Exit" , gameFont , 28);
     exitText.setFillColor(sf::Color::White);
     exitText.setPosition(exitButton.getPosition().x + 50 , exitButton.getPosition().y + 10);
     
@@ -270,10 +299,10 @@ void Game::startGame()
     nameBox.setPosition(200.f , 200.f);
     nameBox.setFillColor(sf::Color::White);
 
-    sf::Text nameLabel("enter your name :" , font , 24);
+    sf::Text nameLabel("enter your name :" , gameFont , 24);
     nameLabel.setPosition(200.f , 160.f);
 
-    sf::Text nameText("" , font , 22);
+    sf::Text nameText("" , gameFont , 22);
     nameText.setPosition(210.f , 210.f);
     nameText.setFillColor(sf::Color::Black);
 
@@ -281,10 +310,10 @@ void Game::startGame()
     timeBox.setPosition(200.f , 300.f);
     timeBox.setFillColor(sf::Color(220 , 220 , 220));
 
-    sf::Text timeLabel("last time you ate garlic :" , font , 24);
+    sf::Text timeLabel("last time you ate garlic :" , gameFont , 24);
     timeLabel.setPosition(200.f , 260.f);
 
-    sf::Text timeText("" , font , 22);
+    sf::Text timeText("" , gameFont , 22);
     timeText.setPosition(210.f , 310.f);
     timeText.setFillColor(sf::Color::Black);
 
@@ -293,20 +322,28 @@ void Game::startGame()
     continueButton.setPosition(320.f , 400.f);
     continueButton.setFillColor(sf::Color::Green);
 
-    sf::Text continueText("continue" , font , 22);
+    sf::Text continueText("continue" , gameFont , 22);
     continueText.setFillColor(sf::Color::White);
     continueText.setPosition(continueButton.getPosition().x + 20 , continueButton.getPosition().y + 10);
 
     //title text
-    sf::Text titleText("" , font , 28);
+    sf::Text titleText("" , gameFont , 28);
     titleText.setFillColor(sf::Color::White);
     titleText.setPosition(250.f , 100.f);
 
+    //for actions menu
+    enum class ActionType
+    {None , Move , PickUp };
+    ActionType currentAction = ActionType::None;
+    bool showLocationHighlights = false;
+    std::map<std::string, sf::RectangleShape> locationHighlights;
 
     //main loop
     while (window.isOpen())
     {
         sf::Event event;
+        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
         while (window.pollEvent(event))
         {
             //closing window
@@ -315,7 +352,7 @@ void Game::startGame()
                 window.close();
             }
             
-            sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+            mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
             if (event.type == sf::Event::TextEntered && showInputScreen)
             {
@@ -329,9 +366,24 @@ void Game::startGame()
                 }
             }
 
+            sf::FloatRect moveButtonRect(75.f , 120.f , 250.f , 40.f);
+            sf::FloatRect pickUpButtonRect(75.f , 170.f , 250.f , 40.f);
+
                 if (event.type == sf::Event::MouseButtonPressed)
                 {
                     sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                    sf::FloatRect moveButtonRect(75.f , 120.f , 250.f , 40.f);
+                    sf::FloatRect pickUpButtonRect(75.f , 170.f , 250.f , 40.f);
+                    if (moveButtonRect.contains(mousePos))
+                    {
+                        currentAction = ActionType::Move;
+                        showLocationHighlights = true;
+                    }else if (pickUpButtonRect.contains(mousePos))
+                    {
+                        currentAction = ActionType::PickUp;
+                        std::cout << "PickUp action selected.\n";
+                    }
+
                    if (!showInputScreen && !showHeroSelectionScreen)
                     {
                    if (startButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos)))
@@ -403,7 +455,7 @@ void Game::startGame()
                                     button.setPosition(275.f , startY + i * 70.f);
                                     heroButtons.push_back(button);
 
-                                    sf::Text label(heroList[i] , font , 22);
+                                    sf::Text label(heroList[i] , gameFont , 22);
                                     label.setFillColor(sf::Color::White);
                                     label.setPosition(button.getPosition().x + 20 , button.getPosition().y + 10);
                                     heroLabels.push_back(label);
@@ -413,12 +465,66 @@ void Game::startGame()
                                 gamePlayStarted = true;
                                 showMapScreen = true;
                                 std::cout << "both players selected their heroes.\n";
+                                initHeroSpritesAfterSelection(selectedHeroes , mapSprite , locations , controller);
+
+                                std::vector<PlayerInfo> playerInfos;
+                                for (int i = 0 ; i < 2 ; i++)
+                                {
+                                    PlayerInfo info;
+                                    info.name = playerNames[i];
+                                    info.heroName = selectedHeroes[i];
+                                    info.lastGarlicTime = controller.convertToTimePoint(playerTimes[i]);
+                                    playerInfos.push_back(info);
+                                }
+
+                                controller.setupPlayers(playerInfos);
+                                controller.setUpGame(window);
+                                std::cout << "for debugging : hero starting locations :\n";
+                                for (auto& kv : heroStartingLocations)
+                                {
+                                    std::cout << kv.first << "-> " << kv.second << "\n";
+                                }
                                 
                                 heroButtons.clear();
                                 heroLabels.clear();
                                 heroList.clear();
                             }
                             break;
+                        }
+                    }
+                }
+                if (gamePlayStarted && showMapScreen)
+                {
+                    if (moveButtonRect.contains(mousePos))
+                    {
+                        currentAction = ActionType::Move;
+                        showLocationHighlights = true;
+                    }else if (pickUpButtonRect.contains(mousePos))
+                    {
+                        std::string heroName = selectedHeroes[currentHeroPlayer];
+                        std::string heroLoc = controller.getHeroLocation(heroName);
+                        auto items = controller.getItemsAtLocation(heroLoc);
+                        if (!items.empty())
+                        {
+                            std::string currentLocation = controller.getHeroLocation(heroName);
+                            controller.heroPickUpItem(heroName, currentLocation);
+                        } else {
+                            std::cout << "there is no item!\n";
+                        }
+                    }else if (currentAction == ActionType::Move && showLocationHighlights)
+                    {
+                        for (auto& p : locationHighlights)
+                        {
+                            const std::string& locName = p.first;
+                            sf::RectangleShape& rect = p.second;
+                            if (rect.getGlobalBounds().contains(mousePos))
+                            {
+                                std::string heroName = selectedHeroes[currentHeroPlayer];
+                                controller.moveHero(heroName , locName);
+                                showLocationHighlights = false;
+                                currentAction = ActionType::None;
+                                break;
+                            }
                         }
                     }
                 }
@@ -435,7 +541,7 @@ void Game::startGame()
                 button.setPosition(275.f , startY + i * 70.f);
                 heroButtons.push_back(button);
 
-                sf::Text label(heroList[i] , font , 22);
+                sf::Text label(heroList[i] , gameFont , 22);
                 label.setFillColor(sf::Color::White);
                 label.setPosition(button.getPosition().x + 20 , button.getPosition().y + 10);
                 heroLabels.push_back(label);
@@ -449,9 +555,44 @@ void Game::startGame()
         {
             window.draw(mapSprite);
 
+            if (showLocationHighlights)
+            {
+                for (auto& kv : locationHighlights)
+                {
+                    window.draw(kv.second);
+                }
+            }
             window.draw(draculaSprite);
             window.draw(invisibleSprite);
-        }
+
+            auto heroLocs = controller.getHeroLocations();
+            int index = 0;
+            for (auto& kv : heroSprites)
+            {
+                const std::string& heroName = kv.first;
+                sf::Sprite& sprite = kv.second;
+                auto it = heroLocs.find(heroName);
+                if (it != heroLocs.end() && locations.count(it->second))
+                {
+                    Position p = locations.at(it->second);
+                    sf::Vector2f mpos = mapSprite.getPosition();
+                    sf::Vector2f mscale = mapSprite.getScale();
+
+                    float offsetX = (index % 2) * 25.f;
+                    float offsetY = (index / 2) * 25.f;
+
+                    sprite.setPosition(mpos.x + (p.x * mscale.x) + offsetX , mpos.y + (p.y * mscale.y) + offsetY);
+
+                    window.draw(sprite);
+                }
+                index++;
+            }
+    if (gamePlayStarted && showMapScreen)
+    {
+    renderActionMenu(window);
+    }
+}
+
 
         else if (showHeroSelectionScreen)
         {
@@ -479,19 +620,14 @@ void Game::startGame()
 
         window.draw(continueButton);
         window.draw(continueText);
-        }else if (gamePlayStarted)
+        }
+        else if (!gamePlayStarted)
         {
-            for (const auto& [name , sprite] : heroSprites)
-            {
-                window.draw(sprite);
-            }
-        }else{
-            
-        window.draw(bgSprite);
-        window.draw(startButton);
-        window.draw(startText);
-        window.draw(exitButton);
-        window.draw(exitText);
+            window.draw(bgSprite);
+            window.draw(startButton);
+            window.draw(startText);
+            window.draw(exitButton);
+            window.draw(exitText);
 
         }
         window.display();
