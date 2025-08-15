@@ -41,6 +41,10 @@ private:
     std::map<std::string , std::string> heroStartingLocations;
     std::map<std::string , sf::RectangleShape> locationHitboxes;
 
+    ActionState currentAction = ActionState::None;
+    bool showLocationHighlights = false;
+    std::map<std::string, sf::RectangleShape> locationHighlights;
+
 
     sf::Texture bgTexture , inputBgTexture , mapTexture , draculaTexture , invisibleTexture;
     sf::Texture courierTexture , scientistTexture , archaeologistTexture , mayorTexture;
