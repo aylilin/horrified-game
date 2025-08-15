@@ -8,6 +8,10 @@
 #include <sstream>
 #include <iomanip>
 
+//for actions menu
+enum class ActionState
+{None , Move , PickUp , Guide , UsePerk , EndTurn};
+
 Game::Game(sf::RenderWindow& window) : window(window) , typingName(true) , currentPlayerIndex(-1) , inputDone(false) , gamePlayStarted(false) , currentHeroPlayer(0)
 {
     if (!gameFont.loadFromFile("../build/ManufacturingConsent-Regular.ttf"))
@@ -331,12 +335,6 @@ void Game::startGame()
     titleText.setFillColor(sf::Color::White);
     titleText.setPosition(250.f , 100.f);
 
-    //for actions menu
-    enum class ActionType
-    {None , Move , PickUp };
-    ActionType currentAction = ActionType::None;
-    bool showLocationHighlights = false;
-    std::map<std::string, sf::RectangleShape> locationHighlights;
 
     //main loop
     while (window.isOpen())
@@ -376,11 +374,11 @@ void Game::startGame()
                     sf::FloatRect pickUpButtonRect(75.f , 170.f , 250.f , 40.f);
                     if (moveButtonRect.contains(mousePos))
                     {
-                        currentAction = ActionType::Move;
+                        currentAction = ActionState::Move;
                         showLocationHighlights = true;
                     }else if (pickUpButtonRect.contains(mousePos))
                     {
-                        currentAction = ActionType::PickUp;
+                        currentAction = ActionState::PickUp;
                         std::cout << "PickUp action selected.\n";
                     }
 
@@ -497,7 +495,7 @@ void Game::startGame()
                 {
                     if (moveButtonRect.contains(mousePos))
                     {
-                        currentAction = ActionType::Move;
+                        currentAction = ActionState::Move;
                         showLocationHighlights = true;
                     }else if (pickUpButtonRect.contains(mousePos))
                     {
@@ -511,7 +509,7 @@ void Game::startGame()
                         } else {
                             std::cout << "there is no item!\n";
                         }
-                    }else if (currentAction == ActionType::Move && showLocationHighlights)
+                    }else if (currentAction == ActionState::Move && showLocationHighlights)
                     {
                         for (auto& p : locationHighlights)
                         {
@@ -522,7 +520,7 @@ void Game::startGame()
                                 std::string heroName = selectedHeroes[currentHeroPlayer];
                                 controller.moveHero(heroName , locName);
                                 showLocationHighlights = false;
-                                currentAction = ActionType::None;
+                                currentAction = ActionState::None;
                                 break;
                             }
                         }
@@ -581,7 +579,11 @@ void Game::startGame()
                     float offsetX = (index % 2) * 25.f;
                     float offsetY = (index / 2) * 25.f;
 
-                    sprite.setPosition(mpos.x + (p.x * mscale.x) + offsetX , mpos.y + (p.y * mscale.y) + offsetY);
+                    std::cout << heroName << " position raw: " << p.x << "," << p.y << "\n";
+                    std::cout << "scale: " << mscale.x << "," << mscale.y << "\n";
+
+                    sprite.setPosition(mpos.x + (p.x * mscale.x) - sprite.getGlobalBounds().width / 2.f + offsetX , mpos.y + (p.y * mscale.y) - sprite.getGlobalBounds().height / 2.f + offsetY);
+                    std::cout << heroName << " -> " << sprite.getPosition().x << "," << sprite.getPosition().y << "\n";
 
                     window.draw(sprite);
                 }
