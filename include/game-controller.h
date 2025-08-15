@@ -91,8 +91,6 @@ private:
     void heroPhase(sf::RenderWindow&, Hero* currentHero);
     void monsterPhase(sf::RenderWindow&);
 
-    void setupPerkCards(sf::RenderWindow&);
-
 public:
     std::map<std::string , std::string> getHeroLocations() const;
     Hero* getHero(const std::string& heroName);
@@ -101,7 +99,7 @@ public:
     bool moveHero(const std::string& heroName , const std::string& toLocation);
     bool heroPickUpItem(const std::string& heroName , const std::string& location);
     const std::vector<Item>& getItemsAtLocation(const std::string& location) const;
-
+    const std::vector<Monster*>& getMonsters() const;
 
 
 
@@ -110,9 +108,11 @@ public:
     std::chrono::system_clock::time_point convertToTimePoint(const std::string& timeStr);
     void setUpGame(sf::RenderWindow&);
     void setupPlayers(const std::vector<PlayerInfo>& playerInfos);
+    void setupPerkCards(sf::RenderWindow&);
+
 
     GameController();
     ~GameController();
 
-    void run();  //main game loop
+    void run();
 };
