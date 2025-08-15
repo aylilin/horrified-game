@@ -14,6 +14,7 @@ public:
     Game(sf::RenderWindow& window);
     void startGame();
     void initHeroSpritesAfterSelection(const std::vector<std::string>& selectedHeroes , const sf::Sprite& mapSprite , const std::map<std::string , Position>& locations , GameController& controller);
+
 private:
     sf::Font gameFont;
     sf::RenderWindow& window;
