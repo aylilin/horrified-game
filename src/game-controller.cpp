@@ -1,5 +1,6 @@
 #include "../include/game-controller.h"
 #include "../include/game.h"
+#include "../include/ActionState.h"
 #include <iostream>
 #include <algorithm>
 #include <random>
@@ -9,6 +10,12 @@
 
 GameController::GameController()
 {
+    if (!gameFont.loadFromFile("../build/ManufacturingConsent-Regular.ttf"))
+    {
+        std::cerr << "Failed to load font!\n";
+        return;
+    }
+
     setup();
 }
 
@@ -67,6 +74,20 @@ std::chrono::system_clock::time_point GameController::get_timePointFromInput()
     return std::chrono::system_clock::from_time_t(std::mktime(&local_tm));
 }
 
+std::chrono::system_clock::time_point GameController::convertToTimePoint(const std::string& timeStr)
+{
+    int hour = 0, minute = 0;
+    std::sscanf(timeStr.c_str(), "%d:%d", &hour, &minute);
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::tm local_tm = *std::localtime(&now_c);
+    local_tm.tm_hour = hour;
+    local_tm.tm_min = minute;
+    local_tm.tm_sec = 0;
+
+    return std::chrono::system_clock::from_time_t(std::mktime(&local_tm));
+}
 
 void GameController::askPlayersInfo() 
 {
@@ -78,24 +99,60 @@ void GameController::askPlayersInfo()
     // player2.lastGarlicTime = get_timePointFromInput();
 }
 
-std::map<std::string, std::string> GameController::getHeroLocations() const
+std::string GameController::getHeroLocation(const std::string& heroName) const
 {
-    std::map<std::string, std::string> locations;
-    for (const Hero* hero : heroes)
-    {
-        locations[hero->get_name()] = hero->get_location();
-    }
-    return locations;
+    return map.get_characterLocation(heroName);
 }
 
-std::map<std::string, std::string> GameController::getMonsterLocations() const
+std::set<std::string> GameController::getConnectedLocations(const std::string& location) const
+{ 
+    return map.getConnections(location);
+}
+
+bool GameController::moveHero(const std::string& heroName, const std::string& toLocation)
 {
-    std::map<std::string, std::string> locations;
-    for (const Monster* monster : monsters)
+    return map.moveCharacter(heroName, toLocation);
+}
+
+const std::vector<Item>& GameController::getItemsAtLocation(const std::string& location) const
+{
+    return map.get_itemsAt(location);
+}
+
+bool GameController::heroPickUpItem(const std::string& heroName, const std::string& location)
+{
+    Hero* hero = getHero(heroName);
+    if (!hero) return false;
+    return map.get_itemBag().transferItemToHero(location , *hero);
+}
+
+Hero* GameController::getHero(const std::string& heroName)
+{
+    for (Hero* hero : heroes)
     {
-        locations[monster->get_name()] = monster->get_currentLocation();
+        if (hero->get_name() == heroName)
+        {
+            return hero;
+        }
     }
-    return locations;
+    return nullptr;
+}
+
+const Hero* GameController::getHero(const std::string& heroName) const
+{
+    for (const Hero* hero : heroes)
+    {
+        if (hero->get_name() == heroName)
+        {
+            return hero;
+        }
+    }
+    return nullptr;
+}
+
+const std::vector<Monster*>& GameController::getMonsters() const
+{
+    return monsters;
 }
 
 void GameController::determineStartingPlayer()
@@ -113,58 +170,30 @@ void GameController::determineStartingPlayer()
     std::cout << "\nStarting player: " << currentPlayerName << "\n";
 }
 
-void GameController::assignHeroesToPlayers()
+void GameController::setupPlayers(const std::vector<PlayerInfo>& playerInfos)
 {
-    // std::cout << "\nHeroes:\n";
-    // std::cout << "1. Archaeologist\n";
-    // std::cout << "2. Mayor\n";
+    for (const auto& info : playerInfos)
+    {
+        std::string startLoc = heroStartLocations[info.heroName];
+        Hero* hero = nullptr;
 
-    // int choice;
-    // std::cout << currentPlayerName << " , please choose(1 or 2)?\n";
-    // std::cin >> choice;
-    // std::cin.ignore();
-
-    Hero* h1;
-    Hero* h2;
-
-    // if (choice == 1)
-    // {
-    //     h1 = new Archaeologist(player1.name, "Docks");
-    //     h2 = new Mayor(player2.name, "Theatre");
-    //     playerToHero[player1.name] = h1;
-    //     playerToHero[player2.name] = h2;
-    // } else {
-    //     h1 = new Mayor(player1.name, "Theatre");
-    //     h2 = new Archaeologist(player2.name, "Docks");
-    //     playerToHero[player1.name] = h1;
-    //     playerToHero[player2.name] = h2;
-    // }
-
-    // heroes.push_back(h1);
-    // heroes.push_back(h2);
-
-    // std::cout << "\n***" << player1.name << " ---> " << playerToHero[player1.name]->get_name() << "\n";
-    // std::cout << "***" << player2.name << " ---> " << playerToHero[player2.name]->get_name() << "\n";
-
-    // //showing hero and monster location first
-    // Dracula* dracula = new Dracula();
-    // InvisibleMan* invisibleMan = new InvisibleMan();
-    // dracula->set_location("Barn");
-    // invisibleMan->set_location("Institute");
-
-    // map.placeMonster(dracula, "Cave");
-    // map.placeMonster(invisibleMan, "Institute");
-
-    map.placeHero(h1 , h1->get_location());
-    map.placeHero(h2, h2->get_location());
-
-
-    Dracula* dracula = new Dracula();
-    InvisibleMan* invisibleMan = new InvisibleMan();
-    dracula->set_location("Barn");
-    invisibleMan->set_location("Institute");
-    map.placeMonster(dracula, "Cave");
-    map.placeMonster(invisibleMan, "Institute");
+        if (info.heroName == "Archaeologist")
+            hero = new Archaeologist(info.name, startLoc);
+        else if (info.heroName == "Mayor")
+            hero = new Mayor(info.name, startLoc);
+        else if (info.heroName == "Courier")
+            hero = new Courier(info.name, startLoc);
+        else if (info.heroName == "Scientist")
+            hero = new Scientist(info.name, startLoc);
+        else
+        {
+            std::cerr << "Unknown hero name: " << info.heroName << "\n";
+            continue;
+        }
+        map.placeHero(hero, startLoc);
+        playerToHero[info.name] = hero;
+        heroes.push_back(hero);
+    }
 }
 
 void GameController::displayGameState(sf::RenderWindow& window) const
@@ -193,9 +222,6 @@ void GameController::displayGameState(sf::RenderWindow& window) const
 
     float yOffset = 200.f;
 
-    //std::cout << "\n\tTerror Level: " << terrorLevel << " / 7\t\n";
-    //std::cout << "==================================================================================\n";
-    //std::cout << "Hero status:\n";
 
     for (Hero* hero : heroes) {
         sf::Text nameText("NAME : " + hero->get_name() , font , 18);
@@ -203,28 +229,24 @@ void GameController::displayGameState(sf::RenderWindow& window) const
         nameText.setPosition(120.f , yOffset); 
         yOffset += 20.f;
         window.draw(nameText);
-        // std::cout << "NAME : " << hero->get_name() << "\n";
 
         sf::Text locText("LOCATION : " + hero->get_location() , font , 18);
         locText.setFillColor(sf::Color::White);
         locText.setPosition(120.f , yOffset);
         yOffset += 20.f;
         window.draw(locText);
-        // std::cout << "LOCATION :  " << hero->get_location() << "\n";
 
         sf::Text healthText("HEALTH : " + std::to_string(hero->get_health()) , font , 18);
         healthText.setFillColor(sf::Color::White);
         healthText.setPosition(120.f , yOffset);
         yOffset += 20.f;
         window.draw(healthText);
-        // std::cout << "HEALTH : " << hero->get_health() << "\n";
 
         sf::Text actionsText("REMAINING ACTIONS : " + std::to_string(hero->get_remainingActions()) , font , 18);
         actionsText.setFillColor(sf::Color::White);
         actionsText.setPosition(120.f , yOffset);
         yOffset += 20.f;
         window.draw(actionsText);
-        // std::cout << "REMAINING ACTIONS : " << hero->get_remainingActions() << "\n";
         
         sf::Text itemsText("ITEMS : " , font , 18);
         itemsText.setFillColor(sf::Color::White);
@@ -233,15 +255,12 @@ void GameController::displayGameState(sf::RenderWindow& window) const
         window.draw(itemsText);
 
         const auto& inv = hero->get_inventory();
-        // std::cout << "ITEMS : ";
 
         if (inv.empty())
         {
             std::string itemStr;
-            // std::cout << "There are no items...";
             for (const auto& item : inv)
             {
-                // std::cout << item.toString() << " | ";
                 itemStr += item.toString() + " | ";
             }
             sf::Text itemDetail(itemStr , font , 18);
@@ -256,7 +275,6 @@ void GameController::displayGameState(sf::RenderWindow& window) const
         separatorText.setPosition(120.f , yOffset);
         yOffset += 20.f;
         window.draw(separatorText);
-        // std::cout << "\n---------------------------\n";
     }
 
     sf::Text mapItemsTitle("\tItems on the map : " , font , 20);
@@ -264,11 +282,10 @@ void GameController::displayGameState(sf::RenderWindow& window) const
     mapItemsTitle.setPosition(120.f , yOffset);
     yOffset += 30.f;
     window.draw(mapItemsTitle);
-    // std::cout << '\t' << "Items on the map :\n";
-    const auto& mapItems = map.get_getAllItems();
+
+    const auto& mapItems = map.get_AllItems();
     if (!mapItems.empty())
     {
-        // std::cout << "no items currently on the map.\n";
         for (const auto& item : mapItems)
         {
             sf::Text itemText("- " + item.toString() + " at " + item.get_location() , font , 18);
@@ -276,7 +293,6 @@ void GameController::displayGameState(sf::RenderWindow& window) const
             itemText.setPosition(120.f , yOffset);
             yOffset += 20.f;
             window.draw(itemText);
-            // std::cout << "- " << item.toString() << " at " << item.get_location() << '\n';
         }
     }
 
@@ -286,7 +302,6 @@ void GameController::displayGameState(sf::RenderWindow& window) const
     yOffset += 30.f;
     window.draw(villagersTitle);
     
-    // std::cout << "\n---------------------------\n";
     auto villagerTexts = map.displayAvailableVillagers(window);
 }
 
@@ -313,13 +328,6 @@ void GameController::printActionHelp(sf::RenderWindow& window) const
     {{"0. Exit Game: Quit the game." , {220.f , 210.f}} , {"1. Move: Travel to an adjacent connected location. Costs 1 action." , {220.f , 240.f}} ,
     {"2. Guide: Escort a villager from your current location to another." , {220.f , 270.f}} , {"3. Pickup: Pick up an item available at your current location." , {220.f , 300.f}} ,
     {"4. Special Ability: Use your hero's unique power." , {220.f , 330.f}} , {"5. End Turn: Finish your turn, even if actions remain." , {220.f , 360.f}}};
-
-    // std::cout << "0. Exit Game: Quit the game.\n";
-    // std::cout << "1. Move: Travel to an adjacent connected location. Costs 1 action.\n";
-    // std::cout << "2. Guide: Escort a villager from your current location to another.\n";
-    // std::cout << "3. Pickup: Pick up an item available at your current location.\n";
-    // std::cout << "4. Special Ability: Use your hero's unique power.\n";
-    // std::cout << "5. End Turn: Finish your turn, even if actions remain.\n";
 }
 
 void GameController::printSingleActionHelp(sf::RenderWindow& window , int n) const
@@ -416,6 +424,7 @@ void GameController::printSingleActionHelp(sf::RenderWindow& window , int n) con
 void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
 {
     bool turnEnded = false;
+    ActionState currentAction = ActionState::None;
 
     sf::Font font;
     if (!font.loadFromFile("../build/ManufacturingConsent-Regular.ttf"))
@@ -424,63 +433,80 @@ void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
         return;
     }
 
-    while (!turnEnded && currentHero->get_remainingActions() > 0)
+    std::vector<std::pair<sf::RectangleShape , sf::Text>> actionButtons;
+    std::vector<std::string> actions = {"Move" , "Pickup" , "Guide" , "Special Ability" , "Use Perk" , "End Turn"};
+    float yOffsetStart = 200.f;
+
+    for (const auto& action : actions)
     {
-        sf::RectangleShape panel(sf::Vector2f(400.f , 400.f));
-        panel.setFillColor(sf::Color(50 , 50 , 50 , 200));
-        panel.setPosition(200.f , 100.f);
-        window.draw(panel);
-        sf::Text statusText("--- " + currentHero->get_name() + "'s Turn ---\n" "Location: " + currentHero->get_location() + "\n" "Health:" + std::to_string(currentHero->get_health()) + "Remaining Actions: " + std::to_string(currentHero->get_remainingActions()) , font , 18);
-        // std::cout << "\n--- " << currentHero->get_name() << "'s Turn ---\n";
-        // std::cout << "Location: " << currentHero->get_location() << "\n";
-        // std::cout << "Health: " << currentHero->get_health() << "\n";
-        // std::cout << "Remaining Actions: " << currentHero->get_remainingActions() << "\n";
-        statusText.setFillColor(sf::Color::White);
-        statusText.setPosition(220.f , 120.f);
-        window.draw(statusText);
+        sf::RectangleShape button(sf::Vector2f(200.f , 40.f));
+        button.setFillColor(sf::Color(80 , 150 , 80));
+        button.setPosition(220.f , yOffsetStart);
 
-        std::vector<std::pair<sf::RectangleShape , sf::Text>> actionButtons =
-        {{sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("1. Move" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("2. Pickup" , font , 18)} ,
-        {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("3. Guide" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("4. Special Ability" , font , 18)} ,
-        {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("5. Use Perk Card" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("6. End Turn" , font , 18)} ,
-        {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("enter 0 to exit the game :)" , font , 18)}};
-        // std::cout << "\n=== Hero Actions ===\n";
-        // std::cout << "1. Move\n";
-        // std::cout << "2. Pickup\n";
-        // std::cout << "3. Guide\n";
-        // std::cout << "4. Special Ability\n";
-        // std::cout << "5. Use Perk Card\n";
-        // std::cout << "6. End Turn\n";
-        std::cout << "Enter your choice (or 'help <number>'): \n";
-        // std::cout << "or enter 0 to exit the game :)";
-        float yOffset = 200.f;
-        for (auto& [button , text] : actionButtons)
+        sf::Text text(action , font , 18);
+        text.setFillColor(sf::Color::White);
+        text.setPosition(button.getPosition().x + 10 , button.getPosition().y + 5);
+
+        actionButtons.push_back({button , text});
+        yOffsetStart += 50.f;
+    }
+
+    std::string moveInput;
+    bool typingMove = false;
+
+    while (!turnEnded && window.isOpen())
+    {
+        // sf::RectangleShape panel(sf::Vector2f(400.f , 400.f));
+        // panel.setFillColor(sf::Color(50 , 50 , 50 , 200));
+        // panel.setPosition(200.f , 100.f);
+        // window.draw(panel);
+        // sf::Text statusText("--- " + currentHero->get_name() + "'s Turn ---\n" "Location: " + currentHero->get_location() + "\n" "Health:" + std::to_string(currentHero->get_health()) + "Remaining Actions: " + std::to_string(currentHero->get_remainingActions()) , font , 18);
+        // // std::cout << "\n--- " << currentHero->get_name() << "'s Turn ---\n";
+        // // std::cout << "Location: " << currentHero->get_location() << "\n";
+        // // std::cout << "Health: " << currentHero->get_health() << "\n";
+        // // std::cout << "Remaining Actions: " << currentHero->get_remainingActions() << "\n";
+        // statusText.setFillColor(sf::Color::White);
+        // statusText.setPosition(220.f , 120.f);
+        // window.draw(statusText);
+
+        // std::vector<std::pair<sf::RectangleShape , sf::Text>> actionButtons =
+        // {{sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("1. Move" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("2. Pickup" , font , 18)} ,
+        // {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("3. Guide" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("4. Special Ability" , font , 18)} ,
+        // {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("5. Use Perk Card" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("6. End Turn" , font , 18)} ,
+        // {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("enter 0 to exit the game :)" , font , 18)}};
+
+        // float yOffset = 200.f;
+        // for (auto& [button , text] : actionButtons)
+        // {
+        //     button.setFillColor(sf::Color::Green);
+        //     button.setPosition(220.f , yOffset);
+        //     text.setFillColor(sf::Color::White);
+        //     text.setPosition(230.f , yOffset + 5.f);
+
+        //     window.draw(button);
+        //     window.draw(text);
+
+        //     yOffset += 50.f;
+        // }
+        // sf::RectangleShape inputBox(sf::Vector2f(200.f , 40.f));
+        // inputBox.setFillColor(sf::Color(100 , 100 , 100));
+        // inputBox.setPosition(220.f , 450.f);
+        // window.draw(inputBox);
+
+        // // std::string input;
+        // std::string userInput;
+        // bool inputActive = false;
+        sf::Event event;
+        while (window.pollEvent(event))
         {
-            button.setFillColor(sf::Color::Green);
-            button.setPosition(220.f , yOffset);
-            text.setFillColor(sf::Color::White);
-            text.setPosition(230.f , yOffset + 5.f);
+            if (event.type == sf::Event::Closed) 
+            {
+            window.close();
+            }
 
-            window.draw(button);
-            window.draw(text);
-
-            yOffset += 50.f;
-        }
-        sf::RectangleShape inputBox(sf::Vector2f(200.f , 40.f));
-        inputBox.setFillColor(sf::Color(100 , 100 , 100));
-        inputBox.setPosition(220.f , 450.f);
-        window.draw(inputBox);
-
-        // std::string input;
-        std::string userInput;
-        bool inputActive = false;
-        while (window.pollEvent(sf::Event()))
-        {
-            if (sf::Event::Closed) window.close();
-            if (sf::Event::MouseButtonPressed)
+            if (event.type == sf::Event::MouseButtonPressed)
             {
                 sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                yOffset = 200.f;
                 for (int i = 0 ; i < actionButtons.size() ; i++)
                 {
                     if (actionButtons[i].first.getGlobalBounds().contains(mousePos))
@@ -488,130 +514,108 @@ void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
                         switch (i)
                         {
                         case 0:
-                            userInput = "1";
-                            break;
+                        currentAction = ActionState::Move; break;
                         
                         case 1:
-                            userInput = "2";
-                            break;
+                        currentAction = ActionState::Pickup; break;
 
                         case 2:
-                            userInput = "3";
-                            break;
+                        currentAction = ActionState::Guide; break;
 
                         case 3:
-                            userInput = "4";
-                            break;
+                        /* Special Ability */ break;
 
                         case 4:
-                            userInput = "5";
-                            break;
+                        currentAction = ActionState::UsePerk; break;
 
                         case 5:
-                            userInput = "6";
-                            turnEnded = true;
-                            break;
-
-                        case 6:
-                            userInput = "0";
-                            window.close();
-                            break;
+                        currentAction = ActionState::EndTurn; turnEnded = true; break;
                         }
                     }
-                    yOffset += 50.f;
                 }
-                if (inputBox.getGlobalBounds().contains(mousePos)) inputActive = true;
             }
-            if (sf::Event::TextEntered && inputActive)
+            if (sf::Event::TextEntered && typingMove)
             {
-                char c = static_cast<char>(sf::Event::text.unicode);
-                if (std::isprint(c) && userInput.length() < 10) userInput += c;
-                if (c == '\r' || c == '\n') inputActive = false;
-            }
-        }
-
-        // std::getline(std::cin, input);
-        if (!userInput.empty())
-        {
-            if (userInput.rfind("help", 0) == 0)
-            {
-                int num = std::stoi(userInput.substr(5));
-                printSingleActionHelp(window , num);
-                continue;
-            }
-
-        int choice = std::stoi(userInput);
-        switch (choice)
-        {
-            case 0:
-                window.close();
-                //std::cout << "Exiting game. Goodbye!\n";
-                //exit(0);
-                break;
-            case 1: {
-                sf::Text promptText("Enter destination location: " , font , 18);
-                promptText.setFillColor(sf::Color::White);
-                promptText.setPosition(220.f , 500.f);
-                window.draw(promptText);
-                // std::cout << "Enter destination location: ";
-                std::string newLoc;
-                bool locInputActive = true;
-                while (locInputActive && window.isOpen())
+                char c = static_cast<char>(event.text.unicode);
+                if (std::isprint(c))
+                { 
+                moveInput += c;
+                }
+                if (c == '\r' || c == '\n') 
                 {
-                    sf::Event event;
-                    while (window.pollEvent(event))
-                    {
-                        if (event.type == sf::Event::TextEntered && locInputActive)
-                        {
-                            char c = static_cast<char>(event.text.unicode);
-                            if (std::isprint(c) && newLoc.length() < 20) newLoc += c;
-                            if (c == '\r' || c == '\n') locInputActive = false;
-                        }
-                    }
-                    currentHero->move(newLoc);
-                    map.placeHero(currentHero, newLoc);
+                typingMove = false;
                 }
-                // std::getline(std::cin, newLoc);
-                // currentHero->move(newLoc);
-                // map.placeHero(currentHero, newLoc);
-                break;
             }
-            case 2:
-                currentHero->pickup(itemBag);
-                break;
-            case 3:
-                currentHero->guide(map);
-                break;
-            case 4:
-                currentHero->specialAbility();
-                break;
-            case 5:
-                currentHero->usePerk(map, heroes, monsters, itemBag, skipMonsterPhase);
-                break;
-            case 6:
-                turnEnded = true;
-                break;
-            default:
-                sf::Text errorText("Invalid choice." , font , 18);
-                errorText.setFillColor(sf::Color::Red);
-                errorText.setPosition(220.f , 490.f);
-                window.draw(errorText);
-                break;
-                // std::cout << "Invalid choice.\n";
         }
-        currentHero->resetActions();
-    }
-    window.display();
-    // std::cout << "--- " << currentHero->get_name() << "'s turn ended ---\n";
-    // currentHero->resetActions();
-}
-sf::Text endText("--- " + currentHero->get_name() + "'s turn ended ---" , font , 18);
-endText.setFillColor(sf::Color::White);
-endText.setPosition(220.f , 300.f);
-window.draw(endText);
-window.display();
+                    
+            window.clear(sf::Color(30 , 30 , 30));
 
-currentHero->resetActions();
+            sf::RectangleShape panel(sf::Vector2f(400.f , 400.f));
+            panel.setFillColor(sf::Color(50 , 50 , 50 , 200));
+            panel.setPosition(200.f , 100.f);
+            window.draw(panel);
+
+            sf::Text statusText("--- " + currentHero->get_name() + "'s Turn ---\n" + std::string("Location: ") + currentHero->get_location() + "\n" + "Health: " + std::to_string(currentHero->get_health()) + "\n" + "Remaining Actions: " + std::to_string(currentHero->get_remainingActions()) , font , 18);
+            statusText.setFillColor(sf::Color::White);
+            statusText.setPosition(220.f , 120.f);
+            window.draw(statusText);
+
+            for (auto& [button, text] : actionButtons)
+            {
+                window.draw(button);
+                window.draw(text);
+            }
+
+            if (currentAction == ActionState::Move)
+            {
+                 sf::Text movePrompt("Enter destination:" , font , 18);
+                movePrompt.setPosition(220.f , 480.f);
+                movePrompt.setFillColor(sf::Color::Yellow);
+                window.draw(movePrompt);
+
+                sf::Text inputText(moveInput , font , 18);
+                inputText.setPosition(220.f , 510.f);
+                inputText.setFillColor(sf::Color::White);
+                window.draw(inputText);
+
+                typingMove = true;
+            }else if (currentAction == ActionState::Pickup)
+            {
+                currentHero->pickup(itemBag);
+                currentAction = ActionState::None;
+            }else if (currentAction == ActionState::Guide)
+            {
+                currentHero->guide(map);
+                currentAction = ActionState::None;
+            }else if (currentAction == ActionState::UsePerk)
+            {
+                currentHero->usePerk(map , heroes , monsters , itemBag , skipMonsterPhase);
+                currentAction = ActionState::None;
+            }
+
+            window.display();
+
+            if (!typingMove && !moveInput.empty())
+            {
+                currentHero->move(moveInput);
+                map.placeHero(currentHero , moveInput);
+                moveInput.clear();
+                currentAction = ActionState::None;
+            }
+        }
+
+    currentHero->resetActions();
+}
+
+
+std::map<std::string, std::string> GameController::getHeroLocations() const
+{
+    std::map<std::string, std::string> locations;
+    for (const Hero* hero : heroes)
+    {
+        locations[hero->get_name()] = hero->get_location();
+    }
+    return locations;
 }
 
 void GameController::monsterPhase(sf::RenderWindow& window)
@@ -742,13 +746,6 @@ void GameController::checkDefeat(Hero* hero)
 
 void GameController::setupPerkCards(sf::RenderWindow& window)
 {
-    sf::Font font;
-    if (!font.loadFromFile("../build/ManufacturingConsent-Regular.ttf"))
-    {
-        std::cerr << "Failed to load font!\n";
-        return;
-    }
-
     for (int i = 0 ; i < 4 ; i++)
     {
         perkDeck.push_back(std::make_unique<LateIntoNightCard>());
@@ -779,7 +776,7 @@ void GameController::setupPerkCards(sf::RenderWindow& window)
     setupPanel.setPosition(200.f , 250.f);
     window.draw(setupPanel);
 
-    sf::Text setupText("setup perk cards..." , font , 20);
+    sf::Text setupText("setup perk cards..." , gameFont , 20);
     setupText.setFillColor(sf::Color::White);
     setupText.setPosition(220.f , 270.f);
     window.draw(setupText);
@@ -798,7 +795,7 @@ void GameController::setupPerkCards(sf::RenderWindow& window)
             assignPanel.setPosition(200.f , 250.f);
             window.draw(assignPanel);
 
-            sf::Text assignText(h->get_name() + " received perk card: " + card->get_name() , font , 20);
+            sf::Text assignText(h->get_name() + " received perk card: " + card->get_name() , gameFont , 20);
             // std::cout << h->get_name() << " received perk card: " << card->get_name() << "\n";
             assignText.setFillColor(sf::Color::White);
             assignText.setPosition(220.f , 270.f);
@@ -815,11 +812,25 @@ void GameController::setupPerkCards(sf::RenderWindow& window)
 void GameController::setUpGame(sf::RenderWindow& window)
 {
     
-    sf::Text redTexture , blueTexture , yellowTexture;
+    sf::Texture redTexture , blueTexture , yellowTexture;
     if (!redTexture.loadFromFile("../build/Items/Red/Dart.png"))
     {
-        std::cerr << "Failed to load image"
+        std::cerr << "Failed to load red item image!\n";
+        return;
     }
+
+    if (!blueTexture.loadFromFile("../build/Items/Blue/Kite.png"))
+    {
+        std::cerr << "Failed to load blue item image!\n";
+        return;
+    }
+
+    if (!yellowTexture.loadFromFile("../build/Items/Yellow/Flower.png"))
+    {
+        std::cerr << "Failed to load yellow item image!\n";
+        return;
+    }
+
     std::vector<Item> drawnItems = itemBag.drawRandomItems(12);
 
     for (const Item& item : drawnItems)
@@ -827,39 +838,93 @@ void GameController::setUpGame(sf::RenderWindow& window)
         map.placeItem(item);
     }
 
-    std::cout << "\nInitial Items placed on the Map:\n";
-    std::cout << "----------------------------------------\n";
+    sf::RectangleShape setupPanel(sf::Vector2f(400.f , 100.f));
+    setupPanel.setFillColor(sf::Color(50 , 50 , 50 , 200));
+    setupPanel.setPosition(200.f , 250.f);
+    window.draw(setupPanel);
 
+    sf::Text setupText("Setting up initial items on the map..." , gameFont , 20);
+    setupText.setFillColor(sf::Color::White);
+    setupText.setPosition(220.f , 270.f);
+    window.draw(setupText);
+    window.display();
+    sf::sleep(sf::seconds(1));
+
+    sf::RectangleShape itemPanel(sf::Vector2f(600.f , 400.f));
+    itemPanel.setFillColor(sf::Color(50 , 50 , 50 , 200));
+    itemPanel.setPosition(150.f , 100.f);
+    window.draw(itemPanel);
+
+    sf::Text titleText("Initial Items placed on the Map:" , gameFont , 20);
+    titleText.setFillColor(sf::Color::White);
+    titleText.setPosition(170.f , 120.f);
+    window.draw(titleText);
+
+    sf::Text separatorText("----------------------------------------" , gameFont , 18);
+    separatorText.setFillColor(sf::Color::White);
+    separatorText.setPosition(170.f , 150.f);
+    window.draw(separatorText);
+
+    float yOffset = 180.f;
     for (const Item& item : drawnItems)
     {
+        sf::Sprite itemSprite;
         std::string typeStr;
         switch (item.get_type())
         {
-            case Item::Type::RED:    typeStr = "RED"; break;
-            case Item::Type::BLUE:   typeStr = "BLUE"; break;
-            case Item::Type::YELLOW: typeStr = "YELLOW"; break;
+            case Item::Type::RED:
+            itemSprite.setTexture(redTexture);
+            typeStr = "RED"; break;
+
+            case Item::Type::BLUE:
+            itemSprite.setTexture(blueTexture);
+            typeStr = "BLUE"; break;
+
+            case Item::Type::YELLOW:
+            itemSprite.setTexture(yellowTexture);
+            typeStr = "YELLOW"; break;
         }
+        itemSprite.setScale(0.2f , 0.2f);
+        itemSprite.setPosition(170.f , yOffset);
 
-        std::cout << "- " << typeStr << " Item (Power: " << item.get_power()
-                  << ") -> Location: " << item.get_location() << "\n";
+        std::string itemInfo = typeStr + " Item (Power: " + std::to_string(item.get_power()) + ") -> Location: " + item.get_location();
+
+        sf::Text itemText(itemInfo , gameFont , 18);
+        itemText.setFillColor(sf::Color::White);
+        itemText.setPosition(220.f , yOffset + 10.f);
+        window.draw(itemSprite);
+        window.draw(itemText);
+        yOffset += 60.f;
     }
-
-    std::cout << "----------------------------------------\n";
+    sf::Text endSeparator("----------------------------------------" , gameFont , 18);
+    endSeparator.setFillColor(sf::Color::White);
+    endSeparator.setPosition(170.f , yOffset);
+    window.draw(endSeparator);
+    window.display();
+    sf::sleep(sf::seconds(2));
 }
 
 void GameController::run()
 {
-    std::cout << "\n=== Welcome to Horrified ===\n";
-    std::cout << "^Before you start, take a look at the map^\n";
-    map.printMap();
-    map.displayAvailableVillagers();
+    sf::RectangleShape welcomePanel(sf::Vector2f(400.f , 100.f));
+    welcomePanel.setFillColor(sf::Color(50 , 50 , 50 , 200));
+    welcomePanel.setPosition(200.f , 250.f);
+    window.draw(welcomePanel);
+
+    sf::Text welcomeText("=== Welcome to Horrified ===" , gameFont , 20);
+    welcomeText.setFillColor(sf::Color::White);
+    welcomeText.setPosition(220.f , 270.f);
+    window.draw(welcomeText);
+
+
+    //map.printMap();
+    map.displayAvailableVillagers(window);
     askPlayersInfo();
     determineStartingPlayer();
-    assignHeroesToPlayers();
-    setupPerkCards();
-    setUpGame();
+    setupPerkCards(window);
+    setUpGame(window);
     std::cout << "Initial state of the game:\n";
-    displayGameState();
+    displayGameState(window);
 
     while (true)
     {
@@ -870,9 +935,9 @@ void GameController::run()
     {
         if (h->isAlive())
         {
-            heroPhase(h);
-            monsterPhase();
-            displayGameState();
+            heroPhase(window , h);
+            monsterPhase(window);
+            displayGameState(window);
             if (terrorLevel >= 5) return;
         }
     }
