@@ -12,8 +12,8 @@ struct Position
 const std::map<std::string , Position> locations = 
 {
     {"Crypt" , {7.f , 586.f}} ,
-    {"Graveyard" , {850.f , 220.f}} ,
-    {"Tower" , {237.f , 603.f}} ,
+    {"Graveyard" , {460.f , 699.f}} ,
+    {"Tower" , {660.f , 267.f}} ,
     {"Dungeon" , {685.f , 109.f}} ,
     {"Docks" , {388.f , 643.f}} ,
     {"Precinct" , {252.f , 112.f}} ,
