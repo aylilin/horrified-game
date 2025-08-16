@@ -14,6 +14,8 @@
 #include "monster.h"
 #include "dice.h"
 #include "itemBag.h"
+#include "locations.h"
+#include "game.h"
 
 class Monster;
 class Hero;
@@ -41,6 +43,7 @@ public:
 
     //for monster and hero
     void set_characterLocation(const std::string& characterName , const std::string& location);
+    std::vector<std::string> getAllLocationNames() const;
     std::string get_characterLocation(const std::string& characterName) const;
 
     //move on the map
@@ -64,7 +67,7 @@ public:
     void removeVillager(Villager* villager);
 
 
-    void printItems() const;
+    void printItems(sf::RenderWindow& window , const sf::Sprite& mapSprite , const std::map<std::string , Position>& locations , const std::map<Item::Type , sf::Texture>& itemTextures);
 
 private:
     std::map<std::string , std::set<std::string>> adjacencyList; 
