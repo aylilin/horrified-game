@@ -8,7 +8,7 @@ void Item::moveTo(const std::string& newLocation)
     Location = newLocation;
 }
 
-Item::Item(const std::string& name  , Type type , int power , const std::string& Location)
+Item::Item(sf::RenderWindow& window , const sf::Sprite& mapSprite , const std::map<std::string, Position>& locations , std::map<Item::Type , sf::Texture>& itemTextures)
 : name(name) , type(type) , power(power) , Location(Location) 
 {
     if (name.empty())

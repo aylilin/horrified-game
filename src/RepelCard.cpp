@@ -1,57 +1,68 @@
 #include "RepelCard.h"
-#include "../include/monster.h"
-#include "../include/map.h"
 #include <iostream>
+#include "dice.h"
 
-std::string RepelCard::get_name() const 
-{
-    return "Repel";
+RepelCard::RepelCard() {
+    if (!texture.loadFromFile("assets/perk_cards/repel.png")) {
+        std::cerr << "Failed to load Repel card image!\n";
+    }
+    sprite.setTexture(texture);
+    sprite.setScale(0.5f, 0.5f);
+    sprite.setPosition(200, 100);
+
+    if (!font.loadFromFile("assets/fonts/arial.ttf")) {
+        std::cerr << "Failed to load font!\n";
+    }
+
+    descriptionText.setFont(font);
+    descriptionText.setString(get_description());
+    descriptionText.setCharacterSize(18);
+    descriptionText.setFillColor(sf::Color::White);
+    descriptionText.setPosition(200, 320);
+
+    useButton.setSize(sf::Vector2f(120, 40));
+    useButton.setFillColor(sf::Color(50, 150, 50));
+    useButton.setPosition(250, 380);
+
+    buttonText.setFont(font);
+    buttonText.setString("Use");
+    buttonText.setCharacterSize(20);
+    buttonText.setFillColor(sf::Color::White);
+    buttonText.setPosition(280, 385);
 }
 
-std::string RepelCard::get_description() const 
-{
-    return "move one monster back two spaces.";
+void RepelCard::apply(Hero&, std::vector<Hero*>&,
+                      std::vector<Monster*>& monsters, ItemBag&,
+                      Map& map, bool&) {
+    Dice dice;
+    std::cout << "[Repel] Moving all monsters 2 steps.\n";
+
+    for (Monster* monster : monsters) {
+        if (monster) {
+            map.moveMonster(monster, 2, dice);
+            std::cout << monster->get_name() << " moved 2 steps.\n";
+        }
+    }
 }
 
-void RepelCard::apply(Hero& , std::vector<Hero*>& , std::vector<Monster*>& monsters , ItemBag& , Map& map , bool&) 
-{
-    if (monsters.empty()) 
-    {
-        std::cout << "There is no monsters in the game...\n";
-        return;
+void RepelCard::draw(sf::RenderWindow& window) {
+    window.draw(sprite);
+    window.draw(descriptionText);
+    window.draw(useButton);
+    window.draw(buttonText);
+}
+
+bool RepelCard::handleEvent(const sf::Event& event,
+                            Hero& currentHero, std::vector<Hero*>& allHeroes,
+                            std::vector<Monster*>& monsters, ItemBag& bag,
+                            Map& map, bool& skipMonsterPhase) {
+    if (event.type == sf::Event::MouseButtonPressed &&
+        event.mouseButton.button == sf::Mouse::Left) {
+        sf::Vector2f mousePos(event.mouseButton.x, event.mouseButton.y);
+        if (useButton.getGlobalBounds().contains(mousePos)) {
+            apply(currentHero, allHeroes, monsters, bag, map, skipMonsterPhase);
+            return true;
+        }
     }
-
-    std::cout << '\t' << "***Monster Selection***\n";
-    for (size_t i = 0; i < monsters.size(); ++i) 
-    {
-        std::cout << i + 1 << ". " << monsters[i]->get_name()
-        << " in " << monsters[i]->get_currentLocation() << "\n";
-    }
-
-    int choice;
-    std::cout << "enter monster's number : ";
-    std::cin >> choice;
-    std::cin.ignore();
-
-    if (choice < 1 || choice > (int)monsters.size()) 
-    {
-        std::cout << "invalid choice...\n";
-        return;
-    }
-
-    Monster& selected = *monsters[choice - 1];
-    std::string currentLocation = selected.get_currentLocation();
-
-    std::cout << "The place you want to be moved to : " << selected.get_name() << "\n";
-    std::string target;
-    std::getline(std::cin, target);
-
-    if (map.areConnected(currentLocation, target)) 
-    {
-        map.set_characterLocation(selected.get_name(), target);
-        selected.set_location(target);
-        std::cout << selected.get_name() << "moved to " << target << "\n";
-    } else {
-        std::cout << "This location is not connected to the current location!!!\n";
-    }
+    return false;
 }

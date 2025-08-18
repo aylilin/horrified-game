@@ -2,6 +2,7 @@
 #include "../include/monster.h"
 #include "../include/hero.h"
 #include "../include/game-controller.h"
+#include "../include/itemBag.h"
 
 #include <iostream>
 #include <algorithm>
@@ -37,7 +38,6 @@ Map::Map()
     connectLocations("Institute" , "Laboratory");
     connectLocations("Laboratory" , "Mansion");
     connectLocations("Mansion" , "Hospital");
-    // connectLocations("Hospital" , "Barn");
 }
 
 void Map::addLocation(const std::string& name) 
@@ -71,6 +71,17 @@ void Map::connectLocations(const std::string& from , const std::string& to)
     locationConnections[to].insert(from);
 }
 
+std::vector<std::string> Map::getAllLocationNames() const
+{
+    std::vector<std::string> locations;
+    locations.reserve(adjacencyList.size());
+    for (const auto& [loc, _] : adjacencyList)
+    {
+        locations.push_back(loc);
+    }
+    return locations;
+}
+
 const std::vector<Item>& Map::get_itemsAt(const std::string& location) const
 {
     static std::vector<Item> empty;
@@ -91,6 +102,12 @@ void Map::placeItem(const Item& item)
 const std::vector<Item>& Map::get_AllItems() const
 {
     return items;
+}
+
+void Map::addItemToLocation(const Item& item)
+{
+    itemsOnMap.push_back(item);
+    itemsInLocation[item.get_location()].push_back(item);
 }
 
 void Map::set_characterLocation(const std::string& characterName, const std::string& location) 
@@ -189,19 +206,38 @@ std::vector<std::string>  Map::displayAvailableVillagers(sf::RenderWindow& windo
     return villagerTexts;
 }
 
-void Map::printItems() const 
+void Map::printItems(sf::RenderWindow& window , const sf::Sprite& mapSprite , const std::map<std::string , Position>& locations , const std::map<Item::Type , sf::Texture>& itemTextures)
 {
-    std::cout << "Items on Map:\n";
-    for (const auto& [loc, items] : itemsInLocation) 
+    for (const auto& [loc, items] : itemsInLocation)
     {
-        std::cout << loc << ": ";
+        auto it = locations.find(loc);
+        if (it == locations.end()) continue;
+
+        Position pos = it->second;
+        sf::Vector2f mapPos = mapSprite.getPosition();
+        sf::Vector2f mapScale = mapSprite.getScale();
+
+        float baseX = mapPos.x + (pos.x * mapScale.x);
+        float baseY = mapPos.y + (pos.y * mapScale.y);
+
+        float offsetX = 0.f;
+
         for (const auto& item : items)
         {
-            std::cout << item.toString() << ", ";
+            auto texIt = itemTextures.find(item.get_type());
+            if (texIt == itemTextures.end()) continue;
+
+            sf::Sprite sprite;
+            sprite.setTexture(texIt->second);
+            sprite.setScale(0.25f, 0.25f);
+            sprite.setPosition(baseX + offsetX, baseY);
+
+            window.draw(sprite);
+            offsetX += 30.f;
         }
-        std::cout << "\n";
     }
 }
+
 
 std::vector<Villager*> Map::get_villagersAt(const std::string& location)
 {

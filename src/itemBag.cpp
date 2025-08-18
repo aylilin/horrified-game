@@ -1,6 +1,7 @@
 #include "itemBag.h"
 #include "hero.h"
 #include "monster.h"
+#include "map.h"
 
 #include <cstdlib>
 #include <ctime>

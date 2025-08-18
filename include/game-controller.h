@@ -53,7 +53,6 @@ private:
     Map map;
     ItemBag itemBag;
     Dice dice;
-    std::vector<Hero*> heroes;
     std::vector<Monster*> monsters;
     std::vector<std::unique_ptr<MonsterCard>> monsterDeck;
     std::vector<std::unique_ptr<PerkCard>> perkDeck;
@@ -88,11 +87,13 @@ private:
     std::chrono::system_clock::time_point get_timePointFromInput();
     void checkDefeat(Hero* hero);
     void setupVillagers();
-    void heroPhase(sf::RenderWindow&, Hero* currentHero);
     void monsterPhase(sf::RenderWindow&);
 
 public:
+    std::vector<Hero*> heroes;
+
     std::map<std::string , std::string> getHeroLocations() const;
+
     Hero* getHero(const std::string& heroName);
     const Hero* getHero(const std::string& heroName) const;
     std::string getHeroLocation(const std::string& heroName) const;
@@ -100,6 +101,7 @@ public:
     bool heroPickUpItem(const std::string& heroName , const std::string& location);
     const std::vector<Item>& getItemsAtLocation(const std::string& location) const;
     const std::vector<Monster*>& getMonsters() const;
+    void heroPhase(sf::RenderWindow& , Hero* currentHero);
 
 
 
@@ -109,7 +111,6 @@ public:
     void setUpGame(sf::RenderWindow&);
     void setupPlayers(const std::vector<PlayerInfo>& playerInfos);
     void setupPerkCards(sf::RenderWindow&);
-
 
     GameController();
     ~GameController();

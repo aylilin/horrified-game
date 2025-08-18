@@ -15,12 +15,12 @@
 #include "dice.h"
 #include "itemBag.h"
 #include "locations.h"
-#include "game.h"
 
 class Monster;
 class Hero;
 class Villager;
 class GameController;
+class Game;
 
 class Map
 {
@@ -39,6 +39,7 @@ public:
     std::vector<Item>& get_itemsAt(const std::string& location); 
     ItemBag& get_itemBag();
     const std::vector<Item>& get_AllItems() const;
+    void addItemToLocation(const Item& item);
 
 
     //for monster and hero

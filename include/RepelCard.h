@@ -1,11 +1,36 @@
 #pragma once
+
 #include "perkCard.h"
 
-class RepelCard : public PerkCard 
-{
-public:
-    std::string get_name() const override;
-    std::string get_description() const override;
+#include <SFML/Graphics.hpp>
 
-    void apply(Hero& currentHero , std::vector<Hero*>&allHeros , std::vector<Monster*>&monsters , ItemBag& bag , Map& map , bool& skipMonsterPhase) override;
+class RepelCard : public PerkCard {
+private:
+    sf::Texture texture;
+    sf::Sprite sprite;
+    sf::Font font;
+    sf::Text descriptionText;
+    sf::RectangleShape useButton;
+    sf::Text buttonText;
+
+public:
+    RepelCard();
+
+    std::string get_name() const override { return "Repel"; }
+    std::string get_description() const override { return "Move all monsters 2 steps."; }
+
+    void apply(Hero& currentHero, std::vector<Hero*>& allHeroes,
+               std::vector<Monster*>& monsters, ItemBag& bag, Map& map,
+               bool& skipMonsterPhase) override;
+
+    void draw(sf::RenderWindow& window);
+    bool handleEvent(const sf::Event& event,
+                     Hero& currentHero, std::vector<Hero*>& allHeroes,
+                     std::vector<Monster*>& monsters, ItemBag& bag,
+                     Map& map, bool& skipMonsterPhase);
+
+    std::string getImagePath() const override {
+    return "assets/perkcards/break_of_dawn.png";
+    }
 };
+

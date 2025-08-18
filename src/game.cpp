@@ -3,14 +3,12 @@
 #include "locations.h"
 #include "game-controller.h"
 #include "game.h"
+#include "ActionState.h"
 
 #include <iostream>
 #include <sstream>
 #include <iomanip>
 
-//for actions menu
-enum class ActionState
-{None , Move , PickUp , Guide , UsePerk , EndTurn};
 
 Game::Game(sf::RenderWindow& window) : window(window) , typingName(true) , currentPlayerIndex(-1) , inputDone(false) , gamePlayStarted(false) , currentHeroPlayer(0)
 {
@@ -171,6 +169,30 @@ void Game::startGame()
     std::vector<std::string> selectedHeroes(2);
     int currentHeroPlayer;
     std::map<std::string, sf::RectangleShape> locationHitboxes;
+
+    std::map<Item::Type, sf::Texture> itemTextures;
+
+    sf::Texture redTex, blueTex, yellowTex;
+
+    if (!redTex.loadFromFile("assets/items/red.png"))
+    {
+        throw std::runtime_error("Failed to load red.png");
+    }
+
+    if (!blueTex.loadFromFile("assets/items/blue.png"))
+    {
+        throw std::runtime_error("Failed to load blue.png");
+    }
+
+    if (!yellowTex.loadFromFile("assets/items/yellow.png"))
+    {
+        throw std::runtime_error("Failed to load yellow.png");
+    }
+
+    itemTextures[Item::Type::RED] = redTex;
+    itemTextures[Item::Type::BLUE] = blueTex;
+    itemTextures[Item::Type::YELLOW] = yellowTex;
+
 
 
     //map screen
@@ -378,7 +400,7 @@ void Game::startGame()
                         showLocationHighlights = true;
                     }else if (pickUpButtonRect.contains(mousePos))
                     {
-                        currentAction = ActionState::PickUp;
+                        currentAction = ActionState::Pickup;
                         std::cout << "PickUp action selected.\n";
                     }
 
@@ -491,43 +513,19 @@ void Game::startGame()
                         }
                     }
                 }
+               
                 if (gamePlayStarted && showMapScreen)
                 {
-                    if (moveButtonRect.contains(mousePos))
+                    for (int i = 0 ; i < selectedHeroes.size() ; i++)
                     {
-                        currentAction = ActionState::Move;
-                        showLocationHighlights = true;
-                    }else if (pickUpButtonRect.contains(mousePos))
-                    {
-                        std::string heroName = selectedHeroes[currentHeroPlayer];
-                        std::string heroLoc = controller.getHeroLocation(heroName);
-                        auto items = controller.getItemsAtLocation(heroLoc);
-                        if (!items.empty())
-                        {
-                            std::string currentLocation = controller.getHeroLocation(heroName);
-                            controller.heroPickUpItem(heroName, currentLocation);
-                        } else {
-                            std::cout << "there is no item!\n";
-                        }
-                    }else if (currentAction == ActionState::Move && showLocationHighlights)
-                    {
-                        for (auto& p : locationHighlights)
-                        {
-                            const std::string& locName = p.first;
-                            sf::RectangleShape& rect = p.second;
-                            if (rect.getGlobalBounds().contains(mousePos))
-                            {
-                                std::string heroName = selectedHeroes[currentHeroPlayer];
-                                controller.moveHero(heroName , locName);
-                                showLocationHighlights = false;
-                                currentAction = ActionState::None;
-                                break;
-                            }
-                        }
+
+                        Hero* currentHero = controller.heroes.at(i);
+
+                        controller.heroPhase(window , currentHero);
+
+                        if (!window.isOpen()) break;
                     }
                 }
-            }
-        }
 
         if (showHeroSelectionScreen && heroButtons.empty())
         {
@@ -545,7 +543,8 @@ void Game::startGame()
                 heroLabels.push_back(label);
             }
         }
-
+    }
+}
         //clearing the page with background color
         window.clear();
 
@@ -560,6 +559,7 @@ void Game::startGame()
                     window.draw(kv.second);
                 }
             }
+            map.printItems(window , mapSprite , locations , itemTextures);
             window.draw(draculaSprite);
             window.draw(invisibleSprite);
 
@@ -594,8 +594,6 @@ void Game::startGame()
     renderActionMenu(window);
     }
 }
-
-
         else if (showHeroSelectionScreen)
         {
             sf::Text prompt("player " + std::to_string(currentHeroPlayer + 1) + " : Choose your hero" , font , 26);

@@ -3,6 +3,8 @@
 #include <SFML/Graphics.hpp>
 #include "game-controller.h"
 #include "locations.h"
+#include "ActionState.h"
+#include "map.h"
 
 #include <vector>
 #include <string>
@@ -18,6 +20,7 @@ public:
 private:
     sf::Font gameFont;
     sf::RenderWindow& window;
+    Map map;
     bool typingName;
     std::string nameInput, timeInput;
     int currentPlayerIndex;

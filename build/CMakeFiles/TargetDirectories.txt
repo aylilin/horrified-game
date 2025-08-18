@@ -1,0 +1,3 @@
+/home/aylin/Desktop/graphic-horrified/build/CMakeFiles/app.dir
+/home/aylin/Desktop/graphic-horrified/build/CMakeFiles/edit_cache.dir
+/home/aylin/Desktop/graphic-horrified/build/CMakeFiles/rebuild_cache.dir

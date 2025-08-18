@@ -589,10 +589,29 @@ void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
                 currentAction = ActionState::None;
             }else if (currentAction == ActionState::UsePerk)
             {
-                currentHero->usePerk(map , heroes , monsters , itemBag , skipMonsterPhase);
+                auto& perks = currentHero->getPerks();
+                if (!perks.empty())
+                {
+                    auto card = std::move(perks.back());
+                    perks.pop_back();
+
+                    sf::Texture cardTexture;
+                    if (!cardTexture.loadFromFile(card->getImagePath()))
+                    {
+                        std::cerr << "Failed to load perk card image!\n";
+                    } else {
+                        sf::Sprite cardSprite(cardTexture);
+                        cardSprite.setPosition(250.f, 260.f);
+                        window.draw(cardSprite);
+                        window.display();
+                        sf::sleep(sf::seconds(2));
+                    }
+
+                    card->apply(*currentHero, heroes, monsters, itemBag, map, skipMonsterPhase);
+                }
                 currentAction = ActionState::None;
             }
-
+            
             window.display();
 
             if (!typingMove && !moveInput.empty())

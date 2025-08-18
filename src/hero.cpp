@@ -145,9 +145,9 @@ void Hero::receiveDamage(int amount)
     std::cout << name << "Damaged....(health : " << health << ")\n";
 }
 
-void Hero::givePerk(std::unique_ptr<PerkCard> newPerk)
+void Hero::givePerk(std::unique_ptr<PerkCard> card)
 {
-    perk = std::move(newPerk);
+    perks.push_back(std::move(card));
 }
 
 bool Hero::hasPerk() const
@@ -166,6 +166,11 @@ void Hero::usePerk(Map& map, std::vector<Hero*>& heroes, std::vector<Monster*>& 
     perk->apply(*this, heroes, monsters, bag, map, skipMonsterPhase);
     std::cout << "Perk card used: " << perk->get_name() << "\n";
     perk.reset();
+}
+
+std::vector<std::unique_ptr<PerkCard>>& Hero::getPerks()
+{
+    return perks;
 }
 
 std::string Hero::get_name() const
