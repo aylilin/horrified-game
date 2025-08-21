@@ -6,6 +6,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+BreakOfDawnCard::BreakOfDawnCard() {}
+
 BreakOfDawnCard::BreakOfDawnCard(sf::Font& font , const sf::Texture& texture)
 {
     cardSprite.setTexture(texture);
@@ -19,7 +21,7 @@ BreakOfDawnCard::BreakOfDawnCard(sf::Font& font , const sf::Texture& texture)
     titleText.setPosition(420.f , 220.f);
 
     descriptionText.setFont(font);
-    descriptionText.setString("Skip next Monster Phase\nDraw 2 items");
+    descriptionText.setString("Skip next Monster Phase and draw 2 items");
     descriptionText.setCharacterSize(18);
     descriptionText.setFillColor(sf::Color::White);
     descriptionText.setPosition(420.f , 260.f);
@@ -33,6 +35,16 @@ BreakOfDawnCard::BreakOfDawnCard(sf::Font& font , const sf::Texture& texture)
     buttonText.setCharacterSize(20);
     buttonText.setFillColor(sf::Color::Black);
     buttonText.setPosition(455.f , 345.f);
+}
+
+std::string BreakOfDawnCard::get_name() const 
+{ 
+    return "Break of Dawn"; 
+}
+
+std::string BreakOfDawnCard::get_description() const 
+{ 
+    return "Move the hero 2 spaces."; 
 }
 
 void BreakOfDawnCard::render(sf::RenderWindow& window)
@@ -52,6 +64,11 @@ bool BreakOfDawnCard::handleClick(sf::Vector2f mousePos , Hero& currentHero , st
         return true;
     }
     return false;
+}
+
+std::string BreakOfDawnCard::getImagePath() const 
+{
+    return "../build/Perk_Cards/BreakOfDawn.png";
 }
 
 void BreakOfDawnCard::apply(Hero& currentHero , std::vector<Hero*>& allHeroes , std::vector<Monster*>& monsters , ItemBag& bag , Map& map , bool& skipMonsterPhase)
