@@ -6,6 +6,29 @@
 
 #include <iostream>
 
+sf::Texture FormerEmployerCard::texture;
+bool FormerEmployerCard::texture_loaded = false;
+
+FormerEmployerCard::FormerEmployerCard()
+{
+    if (!texture_loaded)
+    {
+        if (texture.loadFromFile("../build/Monster_Cards/FomerEmployer.png"))
+        {
+            texture_loaded = true;
+            std::cout << "FormerEmployer card texture loaded successfully!" << std::endl;
+        }
+        else{
+            std::cerr << "Failed to load FormerEmployer card texture!" << std::endl;
+        }
+    }
+
+    if (texture_loaded)
+    {
+        sprite.setTexture(texture);
+    }
+}
+
 std::string FormerEmployerCard::get_name() const
 {
     return "Former Employer";
@@ -24,7 +47,7 @@ void FormerEmployerCard::apply(Map& map , std::vector<Monster*>& monsters , std:
         map.placeItem(item);
     }
 
-    Villager* cranly = new Villager("Dr. Cranly", "Precinct");
+    Villager* cranly = new Villager("Dr. Cranly" , "Precinct");
     cranly->set_location("Laboratory");
     map.addVillager(cranly);
     std::cout << "Dr. Cranly appeared at Laboratory.\n";
