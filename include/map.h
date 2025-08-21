@@ -6,19 +6,19 @@
 #include <map>
 #include <set>
 #include <unordered_map>
-#include <set>
 
+
+#include "itemBag.h"
 #include "item.h"
 #include "villager.h"
 #include "hero.h"
 #include "monster.h"
 #include "dice.h"
-#include "itemBag.h"
 #include "locations.h"
 
-class Monster;
-class Hero;
 class Villager;
+class Hero;
+class Monster;
 class GameController;
 class Game;
 
@@ -52,10 +52,10 @@ public:
     std::vector<Villager*> get_villagersAt(const std::string& location);
     std::vector<Hero*> getHeroesAt(const std::string& location);
 
-    void placeHero(Hero* hero, const std::string& location);
+    void placeHero(Hero* hero , const std::string& location);
     std::string findNearestHeroLocation(const std::string& from , const std::vector<Hero*> heroes) const;
-    void placeMonster(Monster* monster, const std::string& location);
-    void moveMonster(Monster* monster, int steps , Dice& dice);
+    void placeMonster(Monster* monster , const std::string& location);
+    void moveMonster(Monster* monster , int steps , Dice& dice);
     void monsterStrike(Monster* monster , int strikeCount , const std::vector<Hero*>& heroes , GameController& controller);
     void manualMoveMonster(Monster* monster);
 
