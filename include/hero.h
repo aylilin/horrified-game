@@ -11,6 +11,7 @@ class Map;
 class ItemBag;
 class PerkCard;
 class Monster;
+class Villager;
 
 class Hero
 {
