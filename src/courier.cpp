@@ -6,6 +6,5 @@ Courier::Courier(const std::string& name , const std::string& startLocation) : H
 
 void Courier::specialAbility()
 {
-    std::cout << "Courier using special ability : fast movement or item delivery!\n";
-    extraActions ++;
+    std::cout << "Courier using special ability.\n";
 }
