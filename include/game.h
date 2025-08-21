@@ -17,6 +17,9 @@ public:
     void startGame();
     void initHeroSpritesAfterSelection(const std::vector<std::string>& selectedHeroes , const sf::Sprite& mapSprite , const std::map<std::string , Position>& locations , GameController& controller);
 
+    std::string moveInput;
+    bool typingMove = false;
+
 private:
     sf::Font gameFont;
     sf::RenderWindow& window;
@@ -24,7 +27,7 @@ private:
     bool typingName;
     std::string nameInput, timeInput;
     int currentPlayerIndex;
-    std::vector<std::string> playerNames, playerTimes;
+    std::vector<std::string> playerNames , playerTimes;
     bool inputDone;
     bool awaitingMoveDestinations = false;
 
@@ -47,7 +50,7 @@ private:
 
     ActionState currentAction = ActionState::None;
     bool showLocationHighlights = false;
-    std::map<std::string, sf::RectangleShape> locationHighlights;
+    std::map<std::string , sf::RectangleShape> locationHighlights;
 
 
     sf::Texture bgTexture , inputBgTexture , mapTexture , draculaTexture , invisibleTexture;
