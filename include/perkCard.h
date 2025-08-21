@@ -2,6 +2,9 @@
 #include <vector>
 #include <string>
 
+#include "hero.h"
+#include "map.h"
+
 class Hero;
 class Monster;
 class Map;
