@@ -46,7 +46,7 @@ public:
     
     void givePerk(std::unique_ptr<PerkCard> newPerk);
     bool hasPerk() const;
-    void usePerk(Map& map, std::vector<Hero*>& heroes, std::vector<Monster*>& monsters, ItemBag& bag, bool& skipMonsterPhase);
+    void usePerk(Map& map , std::vector<Hero*>& heroes , std::vector<Monster*>& monsters , ItemBag& bag , bool& skipMonsterPhase);
 
     std::vector<std::unique_ptr<PerkCard>> perks;
     std::vector<std::unique_ptr<PerkCard>>& getPerks();
