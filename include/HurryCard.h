@@ -4,7 +4,8 @@
 
 #include <SFML/Graphics.hpp>
 
-class HurryCard : public PerkCard {
+class HurryCard : public PerkCard
+{
 private:
     sf::Texture texture;
     sf::Sprite sprite;
@@ -16,20 +17,22 @@ private:
 public:
     HurryCard();
 
-    std::string get_name() const override { return "Hurry"; }
-    std::string get_description() const override { return "Move hero 2 spaces."; }
+    std::string get_name() const override 
+    { 
+        return "Hurry"; 
+    }
 
-    void apply(Hero& currentHero, std::vector<Hero*>& allHeroes,
-               std::vector<Monster*>& monsters, ItemBag& bag, Map& map,
-               bool& skipMonsterPhase) override;
+    std::string get_description() const override 
+    { 
+        return "Move hero 2 steps.";
+    }
 
+    void apply(Hero& currentHero , std::vector<Hero*>& allHeroes , std::vector<Monster*>& monsters , ItemBag& bag , Map& map , bool& skipMonsterPhase) override;
     void draw(sf::RenderWindow& window);
-    bool handleEvent(const sf::Event& event,
-                     Hero& currentHero, std::vector<Hero*>& allHeroes,
-                     std::vector<Monster*>& monsters, ItemBag& bag,
-                     Map& map, bool& skipMonsterPhase);
+    bool handleEvent(const sf::Event& event , Hero& currentHero , std::vector<Hero*>& allHeroes , std::vector<Monster*>& monsters , ItemBag& bag , Map& map , bool& skipMonsterPhase);
 
-    std::string getImagePath() const override {
-    return "assets/perkcards/break_of_dawn.png";
+    std::string getImagePath() const override
+    {
+        return "../build/Perk_Cards/BreakOfDawn.png";
     }
 };
