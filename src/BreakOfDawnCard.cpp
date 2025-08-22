@@ -25,16 +25,6 @@ BreakOfDawnCard::BreakOfDawnCard(sf::Font& font , const sf::Texture& texture)
     descriptionText.setCharacterSize(18);
     descriptionText.setFillColor(sf::Color::White);
     descriptionText.setPosition(420.f , 260.f);
-
-    useButton.setSize(sf::Vector2f(120.f , 40.f));
-    useButton.setFillColor(sf::Color(100 , 200 , 100));
-    useButton.setPosition(420.f , 340.f);
-
-    buttonText.setFont(font);
-    buttonText.setString("USE");
-    buttonText.setCharacterSize(20);
-    buttonText.setFillColor(sf::Color::Black);
-    buttonText.setPosition(455.f , 345.f);
 }
 
 std::string BreakOfDawnCard::get_name() const 
