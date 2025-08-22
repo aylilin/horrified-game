@@ -30,7 +30,7 @@ void GameController::setup()
     monsters.push_back(new Dracula());
     monsters.push_back(new InvisibleMan());
 
-    //adding monster cards
+    //add monster cards
     monsterDeck.push_back(std::make_unique<FormOfTheBatCard>());
     monsterDeck.push_back(std::make_unique<SunriseCard>());
     monsterDeck.push_back(std::make_unique<ThiefCard>());
@@ -60,10 +60,6 @@ std::chrono::system_clock::time_point GameController::get_timePointFromInput()
 {
     int hour, minute;
 
-    //std::cout << "Please enter the time you last ate garlic (hours and minutes): ";
-    //std::cin >> hour >> minute;
-    //std::cin.ignore();
-
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
     std::tm local_tm = *std::localtime(&now_c);
@@ -77,7 +73,7 @@ std::chrono::system_clock::time_point GameController::get_timePointFromInput()
 std::chrono::system_clock::time_point GameController::convertToTimePoint(const std::string& timeStr)
 {
     int hour = 0, minute = 0;
-    std::sscanf(timeStr.c_str(), "%d:%d", &hour, &minute);
+    std::sscanf(timeStr.c_str() , "%d:%d" , &hour , &minute);
 
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
@@ -119,7 +115,7 @@ const std::vector<Item>& GameController::getItemsAtLocation(const std::string& l
     return map.get_itemsAt(location);
 }
 
-bool GameController::heroPickUpItem(const std::string& heroName, const std::string& location)
+bool GameController::heroPickUpItem(const std::string& heroName , const std::string& location)
 {
     Hero* hero = getHero(heroName);
     if (!hero) return false;
@@ -178,19 +174,18 @@ void GameController::setupPlayers(const std::vector<PlayerInfo>& playerInfos)
         Hero* hero = nullptr;
 
         if (info.heroName == "Archaeologist")
-            hero = new Archaeologist(info.name, startLoc);
+            hero = new Archaeologist(info.name , startLoc);
         else if (info.heroName == "Mayor")
-            hero = new Mayor(info.name, startLoc);
+            hero = new Mayor(info.name , startLoc);
         else if (info.heroName == "Courier")
-            hero = new Courier(info.name, startLoc);
+            hero = new Courier(info.name , startLoc);
         else if (info.heroName == "Scientist")
-            hero = new Scientist(info.name, startLoc);
-        else
-        {
-            std::cerr << "Unknown hero name: " << info.heroName << "\n";
+            hero = new Scientist(info.name , startLoc);
+        else{
+            std::cerr << "Unknown";
             continue;
         }
-        map.placeHero(hero, startLoc);
+        map.placeHero(hero , startLoc);
         playerToHero[info.name] = hero;
         heroes.push_back(hero);
     }
@@ -223,7 +218,8 @@ void GameController::displayGameState(sf::RenderWindow& window) const
     float yOffset = 200.f;
 
 
-    for (Hero* hero : heroes) {
+    for (Hero* hero : heroes)
+    {
         sf::Text nameText("NAME : " + hero->get_name() , font , 18);
         nameText.setFillColor(sf::Color::White);
         nameText.setPosition(120.f , yOffset); 
@@ -413,7 +409,6 @@ void GameController::printSingleActionHelp(sf::RenderWindow& window , int n) con
             mainText.setString("Invalid action number.");
             detailText1.setString("Please enter a number between 1 and 5.");
             detailText2.setString("");
-            // std::cout << "Invalid action number. Please enter a number between 1 and 5.\n";
             break;
     }
     window.draw(mainText);
@@ -432,6 +427,43 @@ void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
         std::cerr << "Failed to load font!\n";
         return;
     }
+
+    //for moving...
+    bool selectingMove = false;
+    std::vector<std::pair<sf::RectangleShape , sf::Text>> moveButtons;
+
+    auto buildMoveButtons = [&](const std::set<std::string>& locs)
+    {
+        moveButtons.clear();
+        float y = 360.f;
+        float x = 440.f;  
+        for (const auto& name : locs)
+        {
+            sf::RectangleShape btn({220.f , 36.f});
+            btn.setPosition(x , y);
+            btn.setFillColor(sf::Color(90 , 140 , 220));
+
+            sf::Text tx(name , font , 18);
+            tx.setFillColor(sf::Color::White);
+            tx.setPosition(x + 10.f , y + 6.f);
+
+            moveButtons.push_back({btn , tx});
+            y += 44.f;
+        }
+
+        if (moveButtons.empty())
+        {
+            sf::RectangleShape btn({220.f , 36.f});
+            btn.setPosition(x , y);
+            btn.setFillColor(sf::Color(120 , 120 , 120));
+
+            sf::Text tx("No connected locations" , font , 18);
+            tx.setFillColor(sf::Color::White);
+            tx.setPosition(x + 10.f , y + 6.f);
+
+            moveButtons.push_back({btn , tx});
+        }
+    };
 
     std::vector<std::pair<sf::RectangleShape , sf::Text>> actionButtons;
     std::vector<std::string> actions = {"Move" , "Pickup" , "Guide" , "Special Ability" , "Use Perk" , "End Turn"};
@@ -456,46 +488,6 @@ void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
 
     while (!turnEnded && window.isOpen())
     {
-        // sf::RectangleShape panel(sf::Vector2f(400.f , 400.f));
-        // panel.setFillColor(sf::Color(50 , 50 , 50 , 200));
-        // panel.setPosition(200.f , 100.f);
-        // window.draw(panel);
-        // sf::Text statusText("--- " + currentHero->get_name() + "'s Turn ---\n" "Location: " + currentHero->get_location() + "\n" "Health:" + std::to_string(currentHero->get_health()) + "Remaining Actions: " + std::to_string(currentHero->get_remainingActions()) , font , 18);
-        // // std::cout << "\n--- " << currentHero->get_name() << "'s Turn ---\n";
-        // // std::cout << "Location: " << currentHero->get_location() << "\n";
-        // // std::cout << "Health: " << currentHero->get_health() << "\n";
-        // // std::cout << "Remaining Actions: " << currentHero->get_remainingActions() << "\n";
-        // statusText.setFillColor(sf::Color::White);
-        // statusText.setPosition(220.f , 120.f);
-        // window.draw(statusText);
-
-        // std::vector<std::pair<sf::RectangleShape , sf::Text>> actionButtons =
-        // {{sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("1. Move" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("2. Pickup" , font , 18)} ,
-        // {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("3. Guide" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("4. Special Ability" , font , 18)} ,
-        // {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("5. Use Perk Card" , font , 18)} , {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("6. End Turn" , font , 18)} ,
-        // {sf::RectangleShape(sf::Vector2f(150.f , 40.f)) , sf::Text("enter 0 to exit the game :)" , font , 18)}};
-
-        // float yOffset = 200.f;
-        // for (auto& [button , text] : actionButtons)
-        // {
-        //     button.setFillColor(sf::Color::Green);
-        //     button.setPosition(220.f , yOffset);
-        //     text.setFillColor(sf::Color::White);
-        //     text.setPosition(230.f , yOffset + 5.f);
-
-        //     window.draw(button);
-        //     window.draw(text);
-
-        //     yOffset += 50.f;
-        // }
-        // sf::RectangleShape inputBox(sf::Vector2f(200.f , 40.f));
-        // inputBox.setFillColor(sf::Color(100 , 100 , 100));
-        // inputBox.setPosition(220.f , 450.f);
-        // window.draw(inputBox);
-
-        // // std::string input;
-        // std::string userInput;
-        // bool inputActive = false;
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -507,6 +499,28 @@ void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
             if (event.type == sf::Event::MouseButtonPressed)
             {
                 sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                if (selectingMove)
+                {
+                    for (auto& [btn , txt] : moveButtons)
+                    {
+                        if (btn.getGlobalBounds().contains(mousePos))
+                        {
+                            const std::string destination = txt.getString();
+
+                            if (destination != "No connected locations")
+                            {
+                                currentHero->move(destination);
+                                map.placeHero(currentHero, destination);
+                            }
+                            selectingMove = false;
+                            currentAction = ActionState::None;
+                            break;
+                        }
+                    }
+                    
+                    if (selectingMove == false) continue;
+                
+                }
                 for (int i = 0 ; i < actionButtons.size() ; i++)
                 {
                     if (actionButtons[i].first.getGlobalBounds().contains(mousePos))
@@ -514,7 +528,14 @@ void GameController::heroPhase(sf::RenderWindow& window , Hero* currentHero)
                         switch (i)
                         {
                         case 0:
-                        currentAction = ActionState::Move; break;
+                        {
+                        currentAction = ActionState::Move;
+                        selectingMove = true;
+
+                        auto neighbors = map.getConnections(currentHero->get_location());
+                        buildMoveButtons(neighbors);
+                        break;
+                        }
                         
                         case 1:
                         currentAction = ActionState::Pickup; break;
