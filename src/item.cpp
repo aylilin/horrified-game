@@ -5,11 +5,10 @@
 
 void Item::moveTo(const std::string& newLocation)
 {
-    Location = newLocation;
+    location = newLocation;
 }
 
-Item::Item(sf::RenderWindow& window , const sf::Sprite& mapSprite , const std::map<std::string, Position>& locations , std::map<Item::Type , sf::Texture>& itemTextures)
-: name(name) , type(type) , power(power) , Location(Location) 
+Item::Item(const std::string& name , Type type , int power , const std::string& location) : name(name) , type(type) , power(power) , location(location)
 {
     if (name.empty())
     {
@@ -22,23 +21,26 @@ Item::Item(sf::RenderWindow& window , const sf::Sprite& mapSprite , const std::m
     }
 }
 
+Item::Item(sf::RenderWindow& window , const sf::Sprite& mapSprite , const std::map<std::string , Position>& locations , std::map<Item::Type , sf::Texture>& itemTextures) {}
+
+
 Item::Type Item::get_type() const 
 {
     return type;
 }
 
 int Item::get_power() const
-
 {
     return power;
 }
 
 const std::string& Item::get_location() const
 {
-    return Location;
+    return location;
 }
 
-std::string Item::toString() const {
+std::string Item::toString() const
+{
     std::ostringstream oss;
     std::string typeStr;
     switch (type) {
@@ -50,6 +52,6 @@ std::string Item::toString() const {
     oss << "[" << name << "] "
         << "Type: " << typeStr << ", "
         << "Power: " << power << ", "
-        << "Location: " << Location;
+        << "Location: " << location;
     return oss.str();
 }
