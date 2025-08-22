@@ -45,7 +45,7 @@ void Map::addLocation(const std::string& name)
     adjacencyList[name];
 }
 
-bool Map::areConnected(const std::string& from, const std::string& to) const 
+bool Map::areConnected(const std::string& from , const std::string& to) const 
 {
     auto it = adjacencyList.find(from);
     if (it == adjacencyList.end()) 
@@ -110,7 +110,7 @@ void Map::addItemToLocation(const Item& item)
     itemsInLocation[item.get_location()].push_back(item);
 }
 
-void Map::set_characterLocation(const std::string& characterName, const std::string& location) 
+void Map::set_characterLocation(const std::string& characterName , const std::string& location) 
 {
     characterPositions[characterName] = location;
 }
@@ -127,10 +127,10 @@ ItemBag& Map::get_itemBag()
     return itemBag;
 }
 
-bool Map::moveCharacter(const std::string& characterName, const std::string& toLocation) 
+bool Map::moveCharacter(const std::string& characterName , const std::string& toLocation) 
 {
     std::string current = get_characterLocation(characterName);
-    if (areConnected(current, toLocation)) 
+    if (areConnected(current , toLocation)) 
     {
         characterPositions[characterName] = toLocation;
         return true;
@@ -208,7 +208,7 @@ std::vector<std::string>  Map::displayAvailableVillagers(sf::RenderWindow& windo
 
 void Map::printItems(sf::RenderWindow& window , const sf::Sprite& mapSprite , const std::map<std::string , Position>& locations , const std::map<Item::Type , sf::Texture>& itemTextures)
 {
-    for (const auto& [loc, items] : itemsInLocation)
+    for (const auto& [loc , items] : itemsInLocation)
     {
         auto it = locations.find(loc);
         if (it == locations.end()) continue;
@@ -229,8 +229,8 @@ void Map::printItems(sf::RenderWindow& window , const sf::Sprite& mapSprite , co
 
             sf::Sprite sprite;
             sprite.setTexture(texIt->second);
-            sprite.setScale(0.25f, 0.25f);
-            sprite.setPosition(baseX + offsetX, baseY);
+            sprite.setScale(0.25f , 0.25f);
+            sprite.setPosition(baseX + offsetX , baseY);
 
             window.draw(sprite);
             offsetX += 30.f;
@@ -256,8 +256,10 @@ std::vector<Villager*> Map::get_villagersAt(const std::string& location)
 std::vector<Hero*> Map::getHeroesAt(const std::string& location)
 {
     std::vector<Hero*> result;
-    for (const auto& [loc, heroesHere] : heroPositions) {
-        if (loc == location) {
+    for (const auto& [loc, heroesHere] : heroPositions)
+    {
+        if (loc == location)
+        {
             result = heroesHere;
             break;
         }
@@ -275,7 +277,7 @@ void Map::setVillagerLocation(Villager* villager , const std::string& location)
     if (!villager) return;
 
     //we remove villager position first
-    for (auto& [loc,list] : villagerPositions)
+    for (auto& [loc , list] : villagerPositions)
     {
         list.erase(std::remove(list.begin() , list.end() , villager) , list.end());
     }
@@ -285,11 +287,11 @@ void Map::setVillagerLocation(Villager* villager , const std::string& location)
     villager->set_location(location);
 }
 
-void Map::placeHero(Hero* hero, const std::string& location)
+void Map::placeHero(Hero* hero , const std::string& location)
 {
-    for (auto& [loc, heroes] : heroPositions)
+    for (auto& [loc , heroes] : heroPositions)
     {
-        heroes.erase(std::remove(heroes.begin(), heroes.end(), hero), heroes.end());
+        heroes.erase(std::remove(heroes.begin() , heroes.end() , hero) , heroes.end());
     }
 
     heroPositions[location].push_back(hero);
@@ -401,7 +403,7 @@ void Map::manualMoveMonster(Monster* monster)
         monster->set_location(destination);
         std::cout << monster->get_name() << " moved to " << destination << "\n";
     }else {
-        std::cout << "Invalid destination. Movement skipped...\n";
+        std::cout << "Invalid destination...\n";
     }
 }
 
