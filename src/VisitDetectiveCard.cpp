@@ -5,9 +5,9 @@
 
 static const char* kFontPath = "../build/ManufacturingConsent-Regular.ttf";
 
-static const char* kCardImagePath = "assets/perk_cards/visit_detective.png";
+static const char* kCardImagePath = "../build/Perk_Cards/VisitFromTheDetective.png";
 
-void VisitDetectiveCard::apply(Hero& currentHero , std::vector<Hero*>& /*allHeroes*/ , std::vector<Monster*>& /*monsters*/ , ItemBag& /*bag*/ , Map& map , bool& /*skipMonsterPhase*/)
+void VisitDetectiveCard::apply(Hero& currentHero , std::vector<Hero*>& , std::vector<Monster*>& , ItemBag& , Map& map , bool& )
 {
     std::vector<std::string> locations = map.getAllLocationNames();
     if (locations.empty())
@@ -116,7 +116,7 @@ void VisitDetectiveCard::apply(Hero& currentHero , std::vector<Hero*>& /*allHero
                 }
             }
 
-            if (e.type == sf::Event::MouseButtonPressed && e.mouseButton.button == sf::Mouse::Left)
+            if (e.type == sf::Event::MouseButtonPressed)
             {
                 sf::Vector2f mpos = modal.mapPixelToCoords(sf::Mouse::getPosition(modal));
                 for (auto& b : buttons)
@@ -127,7 +127,7 @@ void VisitDetectiveCard::apply(Hero& currentHero , std::vector<Hero*>& /*allHero
                             currentHero.move(b.value);
                             map.placeHero(&currentHero, b.value);
                         } catch (const std::exception& ex) {
-                            std::cerr << "move/place error: " << ex.what() << "\n";
+                            std::cerr << "error: " << ex.what() << "\n";
                         }
                         modal.close();
                         break;
