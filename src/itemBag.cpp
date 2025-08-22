@@ -17,7 +17,7 @@ ItemBag::ItemBag()
 
 void ItemBag::generateRandomItems(int count)
 {
-    static std::vector<std::string> Locations = {"Cave", "Inn", "Theater", "Tower", "Crypt", "Laboratory","Mansion", "Graveyard", "Barn", "Dungeon"};
+    static std::vector<std::string> Locations = {"Cave" , "Inn" , "Theater" , "Tower" , "Crypt" , "Laboratory" , "Mansion" , "Graveyard" , "Barn" , "Dungeon"};
 
     for (int i = 0 ; i < count ; i++)
     {
@@ -34,9 +34,9 @@ std::vector<Item> ItemBag::drawRandomItems(int count)
 
     std::random_device rd;
     std::mt19937 g(rd());
-    std::shuffle(items.begin(), items.end(), g);
+    std::shuffle(items.begin() , items.end() , g);
 
-    for (int i = 0; i < count && !items.empty(); ++i)
+    for (int i = 0 ; i < count && !items.empty() ; i++)
     {
         selected.push_back(items.back());
         items.pop_back();
@@ -50,7 +50,7 @@ bool ItemBag::isEmpty() const
     return items.empty();
 }
 
-bool ItemBag::transferItemToHero(const std::string& location, Hero& hero)
+bool ItemBag::transferItemToHero(const std::string& location , Hero& hero)
 {
     auto it = std::find_if(items.begin() , items.end() , [&](const Item& item) 
     {
@@ -82,30 +82,31 @@ void ItemBag::loadFromDefinitions()
 
     std::vector<std::string> locations = 
     {
-        "Docks", "Laboratory", "Institute", "Theatre", "Museum", "Graveyard",
-        "Cave", "Tower", "Barn", "Crypt", "Dungeon", "Precinct"
+        "Docks" , "Laboratory" , "Institute" , "Theatre" , "Museum" , "Graveyard" ,
+        "Cave" , "Tower" , "Barn" , "Crypt" , "Dungeon" , "Precinct"
     };
 
-    for (int i = 0; i < 20; ++i)
+    for (int i = 0 ; i < 20 ; i++)
     {
-        items.emplace_back("Item", Item::Type::RED, rand() % 3 + 1, locations[rand() % locations.size()]);
-        items.emplace_back("Item", Item::Type::BLUE, rand() % 3 + 1, locations[rand() % locations.size()]);
-        items.emplace_back("Item", Item::Type::YELLOW, rand() % 3 + 1, locations[rand() % locations.size()]);
+        items.emplace_back("Item" , Item::Type::RED, rand() % 3 + 1 , locations[rand() % locations.size()]);
+        items.emplace_back("Item" , Item::Type::BLUE, rand() % 3 + 1 , locations[rand() % locations.size()]);
+        items.emplace_back("Item" , Item::Type::YELLOW, rand() % 3 + 1 , locations[rand() % locations.size()]);
     }
 }
 
 void ItemBag::printSummary() const 
 {
-    int red = 0, blue = 0, yellow = 0;
+    int red = 0 , blue = 0 , yellow = 0;
 
-    for (const auto& item : items) {
-        switch (item.get_type()) {
+    for (const auto& item : items)
+    {
+        switch (item.get_type())
+        {
             case Item::Type::RED: red++; break;
             case Item::Type::BLUE: blue++; break;
             case Item::Type::YELLOW: yellow++; break;
         }
     }
-
     std::cout << "Item color summary:\n";
     std::cout << "RED: " << red << "\nBLUE: " << blue << "\nYELLOW: " << yellow << "\n";
 }
