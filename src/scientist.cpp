@@ -5,7 +5,5 @@ Scientist::Scientist(const std::string& playerName , const std::string& startLoc
 
 void Scientist::specialAbility()
 {
-    std::cout << "Scientist using special ability : Research or healing!\n";
-    health++;
-    if (health > 4) health = 4;
+    std::cout << "Scientist using special ability : Research\n";
 }
