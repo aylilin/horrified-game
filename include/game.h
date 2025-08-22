@@ -30,6 +30,7 @@ private:
     std::vector<std::string> playerNames , playerTimes;
     bool inputDone;
     bool awaitingMoveDestinations = false;
+    std::vector<std::pair<sf::RectangleShape , sf::Text>> moveButtons;
 
     GameController controller;
     void renderActionMenu(sf::RenderWindow& window);
