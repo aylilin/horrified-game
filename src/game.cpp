@@ -174,19 +174,19 @@ void Game::startGame()
 
     sf::Texture redTex, blueTex, yellowTex;
 
-    if (!redTex.loadFromFile("assets/items/red.png"))
+    if (!redTex.loadFromFile("../build/Items/Red/Dart.png"))
     {
-        throw std::runtime_error("Failed to load red.png");
+        throw std::runtime_error("Failed to load red item");
     }
 
-    if (!blueTex.loadFromFile("assets/items/blue.png"))
+    if (!blueTex.loadFromFile("../build/Items/Blue/Fossil.png"))
     {
-        throw std::runtime_error("Failed to load blue.png");
+        throw std::runtime_error("Failed to load blue item");
     }
 
-    if (!yellowTex.loadFromFile("assets/items/yellow.png"))
+    if (!yellowTex.loadFromFile("../build/Items/Yellow/Garlic.png"))
     {
-        throw std::runtime_error("Failed to load yellow.png");
+        throw std::runtime_error("Failed to load yellow item");
     }
 
     itemTextures[Item::Type::RED] = redTex;
@@ -417,7 +417,6 @@ void Game::startGame()
                 }
 
 
-                // else {
                 if (showInputScreen)
                 {
                     if (nameBox.getGlobalBounds().contains(mousePos))
@@ -479,7 +478,7 @@ void Game::startGame()
                                     label.setFillColor(sf::Color::White);
                                     label.setPosition(button.getPosition().x + 20 , button.getPosition().y + 10);
                                     heroLabels.push_back(label);
-                                }                              
+                                }                           
                             }else{
                                 showHeroSelectionScreen = false;
                                 gamePlayStarted = true;
@@ -526,6 +525,7 @@ void Game::startGame()
                         if (!window.isOpen()) break;
                     }
                 }
+            }
 
         if (showHeroSelectionScreen && heroButtons.empty())
         {
@@ -544,7 +544,6 @@ void Game::startGame()
             }
         }
     }
-}
         //clearing the page with background color
         window.clear();
 
@@ -592,6 +591,25 @@ void Game::startGame()
     if (gamePlayStarted && showMapScreen)
     {
     renderActionMenu(window);
+
+    if (this->typingMove)
+    {
+        sf::RectangleShape overlay({480.f , 300.f});
+        overlay.setFillColor(sf::Color(30 , 30 , 30 , 230));
+        overlay.setPosition(400.f , 200.f);
+        window.draw(overlay);
+
+        sf::Text title("Choose destination:" , font , 20);
+        title.setFillColor(sf::Color::Yellow);
+        title.setPosition(420.f , 220.f);
+        window.draw(title);
+
+        for (auto& [btn, txt] : moveButtons)
+        {
+            window.draw(btn);
+            window.draw(txt);
+        }
+    }
     }
 }
         else if (showHeroSelectionScreen)
